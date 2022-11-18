@@ -56,7 +56,7 @@ class Minesweeper {
     }
 
     fillBoard(x, y) {
-        
+
         for (let i = 0; i < this.boardSize; i++) {
             for (let j = 0; j < this.boardSize; j++) {
                 this.board[j][i].classList.push('hidden');
@@ -65,8 +65,6 @@ class Minesweeper {
     
         this.placeMinesAndInitialSquares(x, y);
         this.revealSurroundingSquares(x, y);
-
-        this.status = 'game started';
 
     }
 
@@ -82,15 +80,12 @@ class Minesweeper {
             if (this.isAClickedSquare(mineX, mineY)) continue;
             if (this.isAMine(mineX, mineY)) continue;
     
-            if (this.status != 'game started') {
-
+            if (this.status == 'game initialized') {
                 this.status = 'game started';
-
                 for (let [i, j] of this.getSurroundingCoords(x, y)) {
                     this.revealSquare(i, j);
                 }
-
-            } else {
+            } else if (this.status == 'game started') {
                 this.board[mineY][mineX].classList.push('mine');
                 numMinesPlaced++;
             }
@@ -133,9 +128,9 @@ class Minesweeper {
     clickSquare(x, y) {
     
         if (this.isAFlag(x, y)) return;
-    
+            
         this.revealSquare(x, y);
-    
+
         if (this.isAMine(x, y)) {
             this.status = 'game over';
             this.youWin = false;
@@ -216,7 +211,7 @@ class Minesweeper {
     }
 
     removeElemFromList(list, elem) {
-        list.splice(list.indexOf(elem));
+        list.splice(list.indexOf(elem), 1);
     }
 
     randomInteger(min, max) {
