@@ -1,0 +1,14 @@
+{
+  "name": "multiplayer-minesweeper",
+  "version": "1.0.0",
+  "description": "A minesweeper game where you can play minesweeper against friends!",
+  "main": "index.js",
+  "type": "module",
+  "author": "Charlie Weinberger",
+  "license": "ISC",
+  "dependencies": {
+    "debug": "^4.1.1",
+    "express": "^4.18.2",
+    "socket.io": "^4.5.3"
+  }
+}
