@@ -7,7 +7,7 @@ let statusHTML;
 
 socket.on('initialize game', (state) => {
     updateElementsById();
-    createBoard(state.boardSize);
+    createBoard(state.board, state.boardSize);
     createEventListeners();
 });
 
@@ -21,14 +21,21 @@ function updateElementsById() {
     statusHTML = document.getElementById("status");
 }
 
-function createBoard(boardSize) {
+function createBoard(board, boardSize) {
+
     for (let i = 0; i < boardSize; i++) {
         let row = boardHTML.insertRow();
         for (let j = 0; j < boardSize; j++) {
+            
             let square = row.insertCell();
-            square.className = 'square';
+
+            for (let className of board[j][i].classList) {
+                square.classList.add(className);
+            }
+
         }
     }
+
 }
 
 function createEventListeners() {

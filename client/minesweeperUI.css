@@ -15,12 +15,33 @@ body {
     height: 50px;
     table-layout: fixed;
     text-align: center;
-    border: 1px solid black;
     background-color: gray;
 }
 
-.clickedSquare:not(.mine):not(.hidden) {
-    background-color: tan;
+/* order: square, clickedSquare, flag, mine, hidden, even/odd */
+
+.square:not(.flag).hidden.even {
+    background-color: #aad751;
+}
+
+.square:not(.flag).hidden.odd {
+    background-color: #a2d149;
+}
+
+.square:not(.flag).hidden:hover {
+    background-color: #b9dd77;
+}
+
+.clickedSquare:not(.mine):not(.hidden).even {
+    background-color: #e5c29f;
+}
+
+.clickedSquare:not(.mine):not(.hidden).odd {
+    background-color: #d7b899;
+}
+
+.clickedSquare:not(.mine):not(.hidden):hover {
+    background-color: #ecd1b7;
 }
 
 .flag {

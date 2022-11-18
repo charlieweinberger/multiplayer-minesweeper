@@ -31,15 +31,22 @@ class Minesweeper {
     }
 
     createBoard() {
+
         for (let i = 0; i < this.boardSize; i++) {
             this.board.push([]);
             for (let j = 0; j < this.boardSize; j++) {
+
+                let parity = (i + j) % 2 == 0;
+                let backgroundColor = parity ? 'even' : 'odd';
+
                 this.board[i].push({
                     innerHTML: '',
-                    classList: ['square']
+                    classList: ['square', 'hidden', backgroundColor]
                 });
+
             }
         }
+
     }
 
     registerClick(click) {
@@ -56,16 +63,8 @@ class Minesweeper {
     }
 
     fillBoard(x, y) {
-
-        for (let i = 0; i < this.boardSize; i++) {
-            for (let j = 0; j < this.boardSize; j++) {
-                this.board[j][i].classList.push('hidden');
-            }
-        }
-    
         this.placeMinesAndInitialSquares(x, y);
         this.revealSurroundingSquares(x, y);
-
     }
 
     placeMinesAndInitialSquares(x, y) {
