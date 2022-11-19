@@ -162,7 +162,6 @@ class Minesweeper {
     
     }
     
-    
     revealSquare(x, y) {
         this.removeElemFromList(this.board[y][x].classList, 'hidden');
         this.board[y][x].classList.push('clickedSquare');

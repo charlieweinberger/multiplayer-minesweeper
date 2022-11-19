@@ -1,0 +1,12 @@
+Sprites:
+
+https://www.spriters-resource.com/browser_games/googleminesweeper/sheet/166586/
+https://www.spriters-resource.com/browser_games/googleminesweeper/sheet/166588/
+https://www.spriters-resource.com/browser_games/googleminesweeper/sheet/166630/
+https://www.spriters-resource.com/browser_games/googleminesweeper/sheet/171698/
+
+To Do:
+
+- fix corner borders
+- get the correct font & font size
+- add the correct images for flags and mines

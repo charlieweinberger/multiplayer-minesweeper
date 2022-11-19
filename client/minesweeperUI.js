@@ -79,7 +79,19 @@ function updateUI(board, boardSize, status, youWin) {
     for (let i = 0; i < boardSize; i++) {
         for (let j = 0; j < boardSize; j++) {
 
-            boardHTML.rows[i].cells[j].innerHTML = board[j][i].innerHTML;
+            let colorMap = {
+                1: '#1976d2',
+                2: '#3b8f3e',
+                3: '#d33030',
+                4: '#7b1fa2',
+                5: '#ff8f00',
+                6: 'teal',
+                7: 'black',
+                8: '#d3d3d3'
+            };
+
+            boardHTML.rows[i].cells[j].innerHTML = `<b>${board[j][i].innerHTML}</b>`;
+            boardHTML.rows[i].cells[j].style.color = colorMap[board[j][i].innerHTML];
 
             boardHTML.rows[i].cells[j].removeAttribute("class");
             for (let className of board[j][i].classList) {
@@ -120,81 +132,81 @@ function updateUI(board, boardSize, status, youWin) {
                 boardHTML.rows[i].cells[j].style.borderLeft   = (leftHidden)   ? border : '';
                 boardHTML.rows[i].cells[j].style.borderRight  = (rightHidden)  ? border : '';
 
-                // top left border
+                // // top left border
 
-                if (topLeftHidden && !topHidden && !leftHidden) {
+                // if (topLeftHidden && !topHidden && !leftHidden) {
 
-                    let div = document.createElement("div");
-                    div.className = 'cornerBorder';
+                //     let div = document.createElement("div");
+                //     div.className = 'cornerBorder';
                     
-                    div.style.width = BORDER_WIDTH;
-                    div.style.height = BORDER_WIDTH;
-                    div.style.background = BORDER_COLOR;
+                //     div.style.width = BORDER_WIDTH;
+                //     div.style.height = BORDER_WIDTH;
+                //     div.style.background = BORDER_COLOR;
 
-                    div.style.position = 'relative';
-                    div.style.top = '-32px';
-                    div.style.left = '0px';
+                //     div.style.position = 'relative';
+                //     div.style.top = '-32px';
+                //     div.style.left = '0px';
 
-                    boardHTML.rows[i].cells[j].appendChild(div);
+                //     boardHTML.rows[i].cells[j].appendChild(div);
 
-                }
+                // }
 
-                // top right border
+                // // top right border
 
-                if (topRightHidden && !topHidden && !rightHidden) {
+                // if (topRightHidden && !topHidden && !rightHidden) {
 
-                    let div = document.createElement("div");
-                    div.className = 'cornerBorder';
+                //     let div = document.createElement("div");
+                //     div.className = 'cornerBorder';
                     
-                    div.style.width = BORDER_WIDTH;
-                    div.style.height = BORDER_WIDTH;
-                    div.style.background = BORDER_COLOR;
+                //     div.style.width = BORDER_WIDTH;
+                //     div.style.height = BORDER_WIDTH;
+                //     div.style.background = BORDER_COLOR;
 
-                    div.style.position = 'relative';
-                    div.style.top = '-32px';
-                    div.style.left = '45px';
+                //     div.style.position = 'relative';
+                //     div.style.top = '-32px';
+                //     div.style.left = '45px';
 
-                    boardHTML.rows[i].cells[j].appendChild(div);
+                //     boardHTML.rows[i].cells[j].appendChild(div);
 
-                }
+                // }
 
-                // bottom left border
+                // // bottom left border
 
-                if (bottomLeftHidden && !bottomHidden && !leftHidden) {
+                // if (bottomLeftHidden && !bottomHidden && !leftHidden) {
 
-                    let div = document.createElement("div");
-                    div.className = 'cornerBorder';
+                //     let div = document.createElement("div");
+                //     div.className = 'cornerBorder';
                     
-                    div.style.width = BORDER_WIDTH;
-                    div.style.height = BORDER_WIDTH;
-                    div.style.background = BORDER_COLOR;
+                //     div.style.width = BORDER_WIDTH;
+                //     div.style.height = BORDER_WIDTH;
+                //     div.style.background = BORDER_COLOR;
 
-                    div.style.position = 'relative';
-                    div.style.top = '13px';
-                    div.style.left = '0px';
+                //     div.style.position = 'relative';
+                //     div.style.top = '13px';
+                //     div.style.left = '0px';
 
-                    boardHTML.rows[i].cells[j].appendChild(div);
+                //     boardHTML.rows[i].cells[j].appendChild(div);
 
-                }
+                // }
 
-                // bottom right border
+                // // bottom right border
 
-                if (bottomRightHidden && !bottomHidden && !rightHidden) {
+                // if (bottomRightHidden && !bottomHidden && !rightHidden) {
 
-                    let div = document.createElement("div");
-                    div.className = 'cornerBorder';
+                //     let div = document.createElement("div");
+                //     div.className = 'cornerBorder';
                     
-                    div.style.width = BORDER_WIDTH;
-                    div.style.height = BORDER_WIDTH;
-                    div.style.background = BORDER_COLOR;
+                //     div.style.width = BORDER_WIDTH;
+                //     div.style.height = BORDER_WIDTH;
+                //     div.style.background = BORDER_COLOR;
 
-                    div.style.position = 'relative';
-                    div.style.top = '13px';
-                    div.style.left = '45px';
+                //     div.style.position = 'relative';
+                //     div.style.top = '13px';
+                //     div.style.left = '45px';
 
-                    boardHTML.rows[i].cells[j].appendChild(div);
+                //     boardHTML.rows[i].cells[j].appendChild(div);
 
-                }
+                // }
                 
             }
             
