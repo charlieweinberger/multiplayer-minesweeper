@@ -89,58 +89,122 @@ function updateUI(board, boardSize, status, youWin) {
         }
     }
 
+    // instead of checking for 'hidden', check for something else, so that mines being revealed don't remove the borders
+
     for (let i = 0; i < boardSize; i++) {
         for (let j = 0; j < boardSize; j++) {
-            if (boardHTML.rows[i].cells[j].innerHTML != '') {
 
-                if (i > 0 && j > 0 && elemInList('hidden', boardHTML.rows[i - 1].cells[j - 1].classList)) {
-                    statusHTML.innerHTML = `(i, j): (${i}, ${j})`;
-                    // boardHTML.rows[i].cells[j].background = 'linear-gradient(to top, #87af3a 5px, transparent 5px) 100% 100%;';
+            if (board[j][i].innerHTML != '') {
+
+                const BORDER_WIDTH = '5px';
+                const BORDER_COLOR = '#87af3a';
+
+                let topHidden, bottomHidden, leftHidden, rightHidden, topLeftHidden, topRightHidden, bottomLeftHidden, bottomRightHidden;
+
+                if (i > 0)             topHidden    = elemInList('hidden', boardHTML.rows[i - 1].cells[j].classList);
+                if (i < boardSize - 1) bottomHidden = elemInList('hidden', boardHTML.rows[i + 1].cells[j].classList);
+                if (j > 0)             leftHidden   = elemInList('hidden', boardHTML.rows[i].cells[j - 1].classList);
+                if (j < boardSize - 1) rightHidden  = elemInList('hidden', boardHTML.rows[i].cells[j + 1].classList);
+
+                if (i > 0 && j > 0)                         topLeftHidden     = elemInList('hidden', boardHTML.rows[i - 1].cells[j - 1].classList);
+                if (i > 0 && j < boardSize - 1)             topRightHidden    = elemInList('hidden', boardHTML.rows[i - 1].cells[j + 1].classList);
+                if (i < boardSize - 1 && j > 0)             bottomLeftHidden  = elemInList('hidden', boardHTML.rows[i + 1].cells[j - 1].classList);
+                if (i < boardSize - 1 && j < boardSize - 1) bottomRightHidden = elemInList('hidden', boardHTML.rows[i + 1].cells[j + 1].classList);
+
+                // side borders
+
+                const border = `${BORDER_WIDTH} solid ${BORDER_COLOR}`;
+                
+                boardHTML.rows[i].cells[j].style.borderTop    = (topHidden)    ? border : '';
+                boardHTML.rows[i].cells[j].style.borderBottom = (bottomHidden) ? border : '';
+                boardHTML.rows[i].cells[j].style.borderLeft   = (leftHidden)   ? border : '';
+                boardHTML.rows[i].cells[j].style.borderRight  = (rightHidden)  ? border : '';
+
+                // top left border
+
+                if (topLeftHidden && !topHidden && !leftHidden) {
+
+                    let div = document.createElement("div");
+                    div.className = 'cornerBorder';
+                    
+                    div.style.width = BORDER_WIDTH;
+                    div.style.height = BORDER_WIDTH;
+                    div.style.background = BORDER_COLOR;
+
+                    div.style.position = 'relative';
+                    div.style.top = '-32px';
+                    div.style.left = '0px';
+
+                    boardHTML.rows[i].cells[j].appendChild(div);
+
                 }
 
-                // background:
-                //      linear-gradient(to bottom, #87af3a 5px, transparent 5px) 0 0,
-                //      linear-gradient(to bottom, #87af3a 5px, transparent 5px) 100% 0,
-                //      linear-gradient(to top, #87af3a 5px, transparent 5px) 0 100%,
-                //      linear-gradient(to top, #87af3a 5px, transparent 5px) 100% 100%;
+                // top right border
 
-                if (i > 0 && elemInList('hidden', boardHTML.rows[i - 1].cells[j].classList)) {
-                    boardHTML.rows[i].cells[j].style.borderTop = '5px solid #87af3a';
-                } else {
-                    boardHTML.rows[i].cells[j].style.borderTop = '';
+                if (topRightHidden && !topHidden && !rightHidden) {
+
+                    let div = document.createElement("div");
+                    div.className = 'cornerBorder';
+                    
+                    div.style.width = BORDER_WIDTH;
+                    div.style.height = BORDER_WIDTH;
+                    div.style.background = BORDER_COLOR;
+
+                    div.style.position = 'relative';
+                    div.style.top = '-32px';
+                    div.style.left = '45px';
+
+                    boardHTML.rows[i].cells[j].appendChild(div);
+
                 }
 
-                // if (i > 0 && j < boardSize - 1 && elemInList('hidden', boardHTML.rows[i - 1].cells[j + 1].classList)) {
-                //     boardHTML.rows[i].cells[j].style.background += 'linear-gradient(to bottom, #87af3a 5px, transparent 5px) 100% 0;';
-                // }
+                // bottom left border
 
-                if (j > 0 && elemInList('hidden', boardHTML.rows[i].cells[j - 1].classList)) {
-                    boardHTML.rows[i].cells[j].style.borderLeft = '5px solid #87af3a';
-                } else {
-                    boardHTML.rows[i].cells[j].style.borderLeft = '';
+                if (bottomLeftHidden && !bottomHidden && !leftHidden) {
+
+                    let div = document.createElement("div");
+                    div.className = 'cornerBorder';
+                    
+                    div.style.width = BORDER_WIDTH;
+                    div.style.height = BORDER_WIDTH;
+                    div.style.background = BORDER_COLOR;
+
+                    div.style.position = 'relative';
+                    div.style.top = '13px';
+                    div.style.left = '0px';
+
+                    boardHTML.rows[i].cells[j].appendChild(div);
+
                 }
 
-                if (j < boardSize - 1 && elemInList('hidden', boardHTML.rows[i].cells[j + 1].classList)) {
-                    boardHTML.rows[i].cells[j].style.borderRight = '5px solid #87af3a';
-                } else {
-                    boardHTML.rows[i].cells[j].style.borderRight = '';
+                // bottom right border
+
+                if (bottomRightHidden && !bottomHidden && !rightHidden) {
+
+                    let div = document.createElement("div");
+                    div.className = 'cornerBorder';
+                    
+                    div.style.width = BORDER_WIDTH;
+                    div.style.height = BORDER_WIDTH;
+                    div.style.background = BORDER_COLOR;
+
+                    div.style.position = 'relative';
+                    div.style.top = '13px';
+                    div.style.left = '45px';
+
+                    boardHTML.rows[i].cells[j].appendChild(div);
+
                 }
-
-                // if (i < boardSize - 1 && j > 0 && elemInList('hidden', boardHTML.rows[i + 1].cells[j - 1].classList)) {
-                //     boardHTML.rows[i].cells[j].style.background += 'linear-gradient(to top, #87af3a 5px, transparent 5px) 0 100%;';
-                // }
-
-                if (i < boardSize - 1 && elemInList('hidden', boardHTML.rows[i + 1].cells[j].classList)) {
-                    boardHTML.rows[i].cells[j].style.borderBottom = '5px solid #87af3a';
-                } else {
-                    boardHTML.rows[i].cells[j].style.borderBottom = '';
-                }
-
-                // if (i < boardSize - 1 && j < boardSize - 1 && elemInList('hidden', boardHTML.rows[i + 1].cells[j + 1].classList)) {
-                //     boardHTML.rows[i].cells[j].style.background += 'linear-gradient(to top, #87af3a 5px, transparent 5px) 100% 100%;';
-                // }
-
+                
             }
+            
+            // else {
+            //     boardHTML.rows[i].cells[j].style.border = '';
+            //     for (const cornerBorder of document.getElementsByClassName('cornerBorder')) {
+            //         cornerBorder.style.visibility = 'hidden';
+            //     }
+            // }
+
         }
     }
 
