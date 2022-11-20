@@ -1,8 +1,9 @@
 class Minesweeper {
 
-    constructor(clientSockets, boardSize, numMines) {
+    constructor(clientSockets, socketId, boardSize, numMines) {
 
         this.clientSockets = clientSockets;
+        this.socketId = socketId;
         this.boardSize = boardSize;
         this.numMines = numMines;
 
@@ -13,16 +14,33 @@ class Minesweeper {
     }
 
     display(message='update game') {
+
         for (let socketId in this.clientSockets) {
-            let socket = this.clientSockets[socketId];
-            socket.emit(message, {
-                board: this.board,
-                boardSize: this.boardSize,
-                numMines: this.numMines,
-                status: this.status,
-                youWin: this.youWin
-            });
+            if (socketId == this.socketId) {
+
+                let socket = this.clientSockets[socketId].socket;
+
+                socket.emit(message, {
+                    id: socketId,
+                    board: this.board,
+                    boardSize: this.boardSize,
+                    numMines: this.numMines,
+                    status: this.status,
+                    youWin: this.youWin
+                });
+
+                socket.broadcast.emit(`broadcast-${message}`, {
+                    id: socketId,
+                    board: this.board,
+                    boardSize: this.boardSize,
+                    numMines: this.numMines,
+                    status: this.status,
+                    youWin: this.youWin
+                });
+
+            }
         }
+        
     }
 
     initialize() {

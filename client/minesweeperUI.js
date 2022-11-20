@@ -2,26 +2,39 @@ let socket = io();
 
 socket.emit('connection');
 
-let boardHTML;
+let board1HTML;
+let board2HTML;
 let statusHTML;
 
 socket.on('initialize game', (state) => {
     updateElementsById();
-    createBoard(state.board, state.boardSize);
+    createBoard(board1HTML, state.board, state.boardSize);
+    createBoard(board2HTML, state.board, state.boardSize);
     createEventListeners();
+});
+
+socket.on('broadcast-initialize game', (state) => {
+    updateElementsById();
+    if (board2HTML.rows.length == 0) createBoard(board2HTML, state.board, state.boardSize);
 });
 
 socket.on('update game', (state) => {
     updateElementsById();
-    updateUI(state.board, state.boardSize, state.status, state.youWin);
+    updateUI(board1HTML, state.board, state.boardSize, state.status, state.youWin);
+});
+
+socket.on('broadcast-update game', (state) => {
+    updateElementsById();
+    updateUI(board2HTML, state.board, state.boardSize, state.status, state.youWin);
 });
 
 function updateElementsById() {
-    boardHTML  = document.getElementById("board");
+    board1HTML = document.getElementById("board1");
+    board2HTML = document.getElementById("board2");
     statusHTML = document.getElementById("status");
 }
 
-function createBoard(board, boardSize) {
+function createBoard(boardHTML, board, boardSize) {
 
     for (let i = 0; i < boardSize; i++) {
         let row = boardHTML.insertRow();
@@ -40,7 +53,7 @@ function createBoard(board, boardSize) {
 
 function createEventListeners() {
 
-    boardHTML.addEventListener('click', e => {
+    board1HTML.addEventListener('click', e => {
 
         let x = e.target.parentElement.rowIndex;
         let y = e.target.cellIndex;
@@ -55,7 +68,7 @@ function createEventListeners() {
 
     });
 
-    boardHTML.addEventListener('contextmenu', e => {
+    board1HTML.addEventListener('contextmenu', e => {
         
         e.preventDefault();
 
@@ -74,7 +87,7 @@ function createEventListeners() {
 
 }
 
-function updateUI(board, boardSize, status, youWin) {
+function updateUI(boardHTML, board, boardSize, status, youWin) {
     
     for (let i = 0; i < boardSize; i++) {
         for (let j = 0; j < boardSize; j++) {

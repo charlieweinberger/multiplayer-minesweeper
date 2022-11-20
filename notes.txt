@@ -5,8 +5,25 @@ https://www.spriters-resource.com/browser_games/googleminesweeper/sheet/166588/
 https://www.spriters-resource.com/browser_games/googleminesweeper/sheet/166630/
 https://www.spriters-resource.com/browser_games/googleminesweeper/sheet/171698/
 
-To Do:
+To Do List:
 
-- fix corner borders
-- get the correct font & font size
-- add the correct images for flags and mines
+Game UI:
+    - fix corner borders
+    - get the correct font & font size
+    - add the correct images for flags and mines
+    - make it so you can't highlight the numbers
+    - make game look like original minesweeper game
+
+App UI:
+    - move winning status ("You Win/Lose!") to inside the game
+    - Add more info to page
+    - Format games to be centered, side-by-side (up to 4 games at once)
+    - Add controls
+        - start button
+        - pause button
+        - allow players to decide if they want the same field or different fields
+    - add a chat
+
+Backend:
+    - make it so infinite players can join (given enough space on the screen)
+        - Fields are added as players join
