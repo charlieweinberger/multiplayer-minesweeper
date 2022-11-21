@@ -54,36 +54,28 @@ function requestHandler(request, response) {
 
 }
 
-const clientSockets = {};
+const sockets = {};
 
 io.on('connection', (socket) => {
 
     console.log('Socket.io started...');
 
     socket.on('connection', () => {
-        
         console.log(`Client socket connected: ${socket.id}`);
-        
-        let game = new Minesweeper(clientSockets, socket.id, 10, 15);
-        
-        clientSockets[socket.id] = {
-            socket: socket,
-            game: game
-        };
-
-        game.initialize();
-
+        sockets[socket.id] = new Minesweeper(socket, 10, 15);
+        sockets[socket.id].createTable();
+        sockets[socket.id].display('initialize game');
     });
 
     socket.on('disconnect', () => {
         console.log(`Client socket disconnected: ${socket.id}`);
-        // game.display('remove socket');
-        delete clientSockets[socket.id];
+        io.emit('remove socket', socket.id);
+        delete sockets[socket.id];
     });
 
     socket.on('click', (click) => {
         console.log(`new click: ${click}`);
-        clientSockets[socket.id].game.registerClick(click);
+        sockets[socket.id].registerClick(click);
     });
 
     socket.on('tell broadcaster-initialize game', (state) => {

@@ -11,13 +11,12 @@ Game UI:
     - fix corner borders
     - get the correct font & font size
     - add the correct images for flags and mines
-    - make it so you can't highlight the numbers
     - make game look like original minesweeper game
 
 App UI:
     - move winning status ("You Win/Lose!") to inside the game
     - Add more info to page
-    - Format games to be centered, side-by-side (up to 4 games at once)
+    - Format games (up to 4 games at once)
     - Add controls
         - start button
         - pause button
@@ -25,5 +24,5 @@ App UI:
     - add a chat
 
 Backend:
-    - remove tables when sockets disconnect
+    - fix current bugs
     - make player class

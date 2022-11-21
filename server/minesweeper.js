@@ -1,13 +1,12 @@
 class Minesweeper {
 
-    constructor(clientSockets, socketId, boardSize, numMines) {
+    constructor(socket, tableSize, numMines) {
 
-        this.clientSockets = clientSockets;
-        this.socketId = socketId;
-        this.boardSize = boardSize;
+        this.socket = socket;
+        this.tableSize = tableSize;
         this.numMines = numMines;
 
-        this.board = [];
+        this.table = [];
         this.status = 'game initialized';
         this.youWin = null;
 
@@ -17,47 +16,34 @@ class Minesweeper {
 
     display(message='update game') {
 
-        for (let socketId in this.clientSockets) {
-            if (socketId == this.socketId) {
+        let state = {
+            id: this.socket.id,
+            table: this.table,
+            tableSize: this.tableSize,
+            numMines: this.numMines,
+            status: this.status,
+            youWin: this.youWin
+        };
 
-                let state = {
-                    id: socketId,
-                    board: this.board,
-                    boardSize: this.boardSize,
-                    numMines: this.numMines,
-                    status: this.status,
-                    youWin: this.youWin
-                };
-
-                let socket = this.clientSockets[socketId].socket;
-
-                socket.emit(message, state);
-                socket.broadcast.emit(`broadcast-${message}`, state);
-
-            }
-        }
+        this.socket.emit(message, state);
+        this.socket.broadcast.emit(`broadcast-${message}`, state);
         
     }
 
     // game
 
-    initialize() {
-        this.createBoard();
-        this.display('initialize game');
-    }
+    createTable() {
 
-    createBoard() {
-
-        for (let i = 0; i < this.boardSize; i++) {
-            this.board.push([]);
-            for (let j = 0; j < this.boardSize; j++) {
+        for (let i = 0; i < this.tableSize; i++) {
+            this.table.push([]);
+            for (let j = 0; j < this.tableSize; j++) {
 
                 let parity = (i + j) % 2 == 0;
                 let backgroundColor = parity ? 'even' : 'odd';
 
-                this.board[i].push({
+                this.table[i].push({
                     innerHTML: '',
-                    classList: ['square', 'hidden', backgroundColor]
+                    className: `square hidden ${backgroundColor}`
                 });
 
             }
@@ -69,7 +55,7 @@ class Minesweeper {
 
         let [ x, y, type ] = [ click.x, click.y, click.type ];
 
-        if (type == 'left'  && this.status == 'game initialized') this.fillBoard(x, y);
+        if (type == 'left'  && this.status == 'game initialized') this.fillTable(x, y);
         if (type == 'left'  && this.status == 'game started') this.clickSquare(x, y);
         if (type == 'right' && this.status == 'game started') this.flagMine(x, y);
 
@@ -78,7 +64,7 @@ class Minesweeper {
 
     }
 
-    fillBoard(x, y) {
+    fillTable(x, y) {
         this.placeMinesAndInitialSquares(x, y);
         this.revealSurroundingSquares(x, y);
     }
@@ -101,7 +87,7 @@ class Minesweeper {
                     this.revealSquare(i, j);
                 }
             } else if (this.status == 'game started') {
-                this.board[mineY][mineX].classList.push('mine');
+                this.addClass(mineX, mineY, 'mine');
                 numMinesPlaced++;
             }
             
@@ -151,7 +137,7 @@ class Minesweeper {
             this.youWin = false;
         } else {
             this.addNumMinesAround(x, y);
-            if (this.board[y][x].innerHTML === '') {
+            if (this.table[y][x].innerHTML === '') {
                 this.revealSurroundingSquares(x, y);
             }
         }
@@ -162,15 +148,15 @@ class Minesweeper {
         
         let numClickedSquares = 0;
     
-        for (let x = 0; x < this.boardSize; x++) {
-            for (let y = 0; y < this.boardSize; y++) {
+        for (let x = 0; x < this.tableSize; x++) {
+            for (let y = 0; y < this.tableSize; y++) {
                 if (this.isAClickedSquare(x, y)) {
                     numClickedSquares++;
                 }
             }
         }
     
-        if (numClickedSquares === this.boardSize * this.boardSize - this.numMines) {
+        if (numClickedSquares === this.tableSize * this.tableSize - this.numMines) {
             this.status = 'game over';
             this.youWin = true;
             this.display();
@@ -179,13 +165,13 @@ class Minesweeper {
     }
     
     revealSquare(x, y) {
-        this.removeElemFromList(this.board[y][x].classList, 'hidden');
-        this.board[y][x].classList.push('clickedSquare');
+        this.removeClass(x, y, 'hidden');
+        this.addClass(x, y, 'clickedSquare');
     }
     
     addNumMinesAround(x, y) {
         let numMinesAroundSquare = this.numMinesAround(x, y);
-        this.board[y][x].innerHTML = numMinesAroundSquare === 0 ? '' : numMinesAroundSquare;
+        this.table[y][x].innerHTML = numMinesAroundSquare === 0 ? '' : numMinesAroundSquare;
     }
 
     numMinesAround(x, y) {
@@ -194,9 +180,9 @@ class Minesweeper {
     
     flagMine(x, y) {
         if (this.isAFlag(x, y)) {
-            this.removeElemFromList(this.board[y][x].classList, 'flag');
+            this.removeClass(x, y, 'flag')
         } else {
-            this.board[y][x].classList.push('flag');
+            this.addClass(x, y, 'flag');
         }
     }
     
@@ -208,24 +194,36 @@ class Minesweeper {
             [x+1, y-1], [x+1, y], [x+1, y+1]
         ];
 
-        return allPossibleCoords.filter(c => 0 <= c[0] && c[0] <= this.boardSize - 1 && 0 <= c[1] && c[1] <= this.boardSize - 1);
+        return allPossibleCoords.filter(c => 0 <= c[0] && c[0] <= this.tableSize - 1 && 0 <= c[1] && c[1] <= this.tableSize - 1);
 
     }
 
     isAClickedSquare(x, y) {
-        return this.board[y][x].classList.includes('clickedSquare');
+        return this.table[y][x].className.includes('clickedSquare');
     }
 
     isAFlag(x, y) {
-        return this.board[y][x].classList.includes('flag');
+        return this.table[y][x].className.includes('flag');
     }
 
     isAMine(x, y) {
-        return this.board[y][x].classList.includes('mine');
+        return this.table[y][x].className.includes('mine');
     }
 
-    removeElemFromList(list, elem) {
-        list.splice(list.indexOf(elem), 1);
+    addClass(x, y, className) {
+        if (!this.isAClickedSquare(x, y)) {
+            this.table[y][x].className += ` ${className}`;
+        }
+    }
+
+    removeClass(x, y, className) {
+        let newClassName = '';
+        for (let classElem of this.table[y][x].className.split(' ')) {
+            if (classElem != className) {
+                newClassName += `${classElem} `;
+            }
+        }
+        this.table[y][x].className = newClassName.slice(0, -1);
     }
 
     randomInteger(min, max) {

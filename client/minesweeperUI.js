@@ -2,77 +2,58 @@ let socket = io();
 
 socket.emit('connection');
 
-// socketry
-
 socket.on('initialize game', (state) => {
-    console.log('initialize game');
-    table = createGame(state.id, state.board, state.boardSize);
+    console.log(`initialize game: ${state.id}`);
+    table = createGame(state.id, state);
     createEventListeners(table);
 });
 
 socket.on('broadcast-initialize game', (state) => {
 
-    console.log('broadcast-initialize game');
+    console.log(`broadcast-initialize game: ${state.id}`);
+    createGame(state.id, state);
 
-    createGame(state.id, state.board, state.boardSize);
-
-    let tableToEmit = getTableById(socket.id);
-    let tableToReallyEmit = [];
-    let tableToReallyReallyEmit = [];
-
-    for (let i = 0; i < state.boardSize; i++) {
-        tableToReallyEmit.push([]);
-        for (let j = 0; j < state.boardSize; j++) {
-            tableToReallyEmit.push([]);
-        }
-    }
-
-    for (let i = 0; i < state.boardSize; i++) {
-        for (let j = 0; j < state.boardSize; j++) {
-            tableToReallyEmit[i][j] = {
-                innerHTML: tableToEmit.rows[i].cells[j].innerHTML,
-                className: tableToEmit.rows[i].cells[j].className
-            }
-        }
-    }
-
-    for (let i = 0; i < state.boardSize; i++) {
-        if (tableToReallyEmit[i] != []) {
-            tableToReallyReallyEmit.push(tableToReallyEmit[i]);
+    let table = [];
+    for (let i = 0; i < state.tableSize; i++) {
+        table.push([]);
+        for (let j = 0; j < state.tableSize; j++) {
+            table[i].push({
+                innerHTML: getTableById(socket.id).rows[i].cells[j].innerHTML,
+                className: getTableById(socket.id).rows[i].cells[j].className
+            });
         }
     }
 
     socket.emit('tell broadcaster-initialize game', {
         stateId: state.id,
         socketId: socket.id,
-        boardSize: state.boardSize,
-        tableToReallyReallyEmit: tableToReallyReallyEmit
+        table: table,
+        tableSize: state.tableSize
     });
 
 });
 
 socket.on('respond to initialize game', (state) => {
-    console.log('respond to initialize game');
-    createGame(state.socketId, state.tableToReallyReallyEmit, state.boardSize, true);
+    console.log(`respond to initialize game: ${state.socketId}`);
+    table = createGame(state.socketId, state);
+    updateUI(table, state);
 });
 
 socket.on('update game', (state) => {
-    console.log('update game');
-    updateUI(getTableById(state.id), state.board, state.boardSize, state.status, state.youWin);
+    console.log(`update game: ${state.id}`);
+    updateUI(getTableById(state.id), state);
 });
 
 socket.on('broadcast-update game', (state) => {
-    console.log('broadcast-update game');
-    updateUI(getTableById(state.id), state.board, state.boardSize, state.status, state.youWin);
+    console.log(`broadcast-update game: ${state.id}`);
+    updateUI(getTableById(state.id), state);
 });
 
-// socket.on('remove socket', (state) => {
-//     console.log('remove socket');
-// });
-
-// socket.on('broadcast-remove socket', (state) => {
-//     console.log('broadcast-remove socket');
-// });
+socket.on('remove socket', (id) => {
+    console.log(`remove socket: ${id}`);
+    const element = document.getElementById(`column-${id}`);
+    element.remove();
+});
 
 // helper functions
 
@@ -84,7 +65,7 @@ function getTableById(id) {
     }
 }
 
-function createGame(id, board, boardSize, filled=false) {
+function createGame(id, state) {
 
     // create divs
 
@@ -105,21 +86,12 @@ function createGame(id, board, boardSize, filled=false) {
 
     // create table
 
-    for (let i = 0; i < boardSize; i++) {
+    for (let i = 0; i < state.tableSize; i++) {
         let row = table.insertRow();
-        for (let j = 0; j < boardSize; j++) {
-            
+        for (let j = 0; j < state.tableSize; j++) {
             let square = row.insertCell();
-
-            if (filled) {
-                square.innerHTML = board[i][j].innerHTML;
-                square.className = board[i][j].className;
-            } else {
-                for (let className of board[j][i].classList) {
-                    square.classList.add(className);
-                }
-            }
-
+            square.className = state.table[i][j].className;
+            square.innerHTML = state.table[i][j].innerHTML;
         }
     }
 
@@ -135,46 +107,37 @@ function createGame(id, board, boardSize, filled=false) {
 
 function createEventListeners(table) {
 
-    table.addEventListener('click', e => {
+    table.addEventListener('mousedown', event => {
 
-        let x = e.target.parentElement.rowIndex;
-        let y = e.target.cellIndex;
+        let x = event.target.parentElement.rowIndex;
+        let y = event.target.cellIndex;
 
-        if (x !== undefined && y !== undefined) {
+        let clickTypeMap = {
+            1: 'left',
+            2: 'middle',
+            3: 'right'
+        }
+
+        if (x !== undefined && y !== undefined && (event.which == 1 || event.which == 3)) {
             socket.emit('click', {
-                x: e.target.parentElement.rowIndex,
-                y: e.target.cellIndex,
-                type: 'left'
+                x: x,
+                y: y,
+                type: clickTypeMap[event.which]
             });
         }
 
     });
 
-    table.addEventListener('contextmenu', e => {
-        
-        e.preventDefault();
-
-        let x = e.target.parentElement.rowIndex;
-        let y = e.target.cellIndex;
-
-        if (x !== undefined && y !== undefined) {
-            socket.emit('click', {
-                x: e.target.parentElement.rowIndex,
-                y: e.target.cellIndex,
-                type: 'right'
-            });
-        }
-
-    });
+    table.addEventListener('contextmenu', event => event.preventDefault());
 
 }
 
 // update game
 
-function updateUI(boardHTML, board, boardSize, status, youWin) {
+function updateUI(table, state) {
     
-    for (let i = 0; i < boardSize; i++) {
-        for (let j = 0; j < boardSize; j++) {
+    for (let i = 0; i < state.tableSize; i++) {
+        for (let j = 0; j < state.tableSize; j++) {
 
             let colorMap = {
                 1: '#1976d2',
@@ -187,47 +150,43 @@ function updateUI(boardHTML, board, boardSize, status, youWin) {
                 8: '#d3d3d3'
             };
 
-            boardHTML.rows[i].cells[j].innerHTML = `<b>${board[j][i].innerHTML}</b>`;
-            boardHTML.rows[i].cells[j].style.color = colorMap[board[j][i].innerHTML];
-
-            boardHTML.rows[i].cells[j].removeAttribute("class");
-            for (let className of board[j][i].classList) {
-                boardHTML.rows[i].cells[j].classList.add(className);
-            }
+            table.rows[i].cells[j].innerHTML = `<b>${state.table[j][i].innerHTML}</b>`;
+            table.rows[i].cells[j].className = state.table[j][i].className;
+            table.rows[i].cells[j].style.color = colorMap[state.table[j][i].innerHTML];
 
         }
     }
 
     // instead of checking for 'hidden', check for something else, so that mines being revealed don't remove the borders
 
-    for (let i = 0; i < boardSize; i++) {
-        for (let j = 0; j < boardSize; j++) {
+    for (let i = 0; i < state.tableSize; i++) {
+        for (let j = 0; j < state.tableSize; j++) {
 
-            if (board[j][i].innerHTML != '') {
+            if (state.table[j][i].innerHTML != '') {
 
                 const BORDER_WIDTH = '5px';
                 const BORDER_COLOR = '#87af3a';
 
                 let topHidden, bottomHidden, leftHidden, rightHidden, topLeftHidden, topRightHidden, bottomLeftHidden, bottomRightHidden;
 
-                if (i > 0)             topHidden    = elemInList('hidden', boardHTML.rows[i - 1].cells[j].classList);
-                if (i < boardSize - 1) bottomHidden = elemInList('hidden', boardHTML.rows[i + 1].cells[j].classList);
-                if (j > 0)             leftHidden   = elemInList('hidden', boardHTML.rows[i].cells[j - 1].classList);
-                if (j < boardSize - 1) rightHidden  = elemInList('hidden', boardHTML.rows[i].cells[j + 1].classList);
+                if (i > 0)                   topHidden    = cellIsHidden(i-1, j);
+                if (i < state.tableSize - 1) bottomHidden = cellIsHidden(i+1, j);
+                if (j > 0)                   leftHidden   = cellIsHidden(i, j-1);
+                if (j < state.tableSize - 1) rightHidden  = cellIsHidden(i, j+1);
 
-                if (i > 0 && j > 0)                         topLeftHidden     = elemInList('hidden', boardHTML.rows[i - 1].cells[j - 1].classList);
-                if (i > 0 && j < boardSize - 1)             topRightHidden    = elemInList('hidden', boardHTML.rows[i - 1].cells[j + 1].classList);
-                if (i < boardSize - 1 && j > 0)             bottomLeftHidden  = elemInList('hidden', boardHTML.rows[i + 1].cells[j - 1].classList);
-                if (i < boardSize - 1 && j < boardSize - 1) bottomRightHidden = elemInList('hidden', boardHTML.rows[i + 1].cells[j + 1].classList);
+                if (i > 0 && j > 0)                                     topLeftHidden     = cellIsHidden(i-1, j-1);
+                if (i > 0 && j < state.tableSize - 1)                   topRightHidden    = cellIsHidden(i-1, j+1);
+                if (i < state.tableSize - 1 && j > 0)                   bottomLeftHidden  = cellIsHidden(i+1, j-1);
+                if (i < state.tableSize - 1 && j < state.tableSize - 1) bottomRightHidden = cellIsHidden(i+1, j+1);
 
                 // side borders
 
                 const border = `${BORDER_WIDTH} solid ${BORDER_COLOR}`;
                 
-                boardHTML.rows[i].cells[j].style.borderTop    = (topHidden)    ? border : '';
-                boardHTML.rows[i].cells[j].style.borderBottom = (bottomHidden) ? border : '';
-                boardHTML.rows[i].cells[j].style.borderLeft   = (leftHidden)   ? border : '';
-                boardHTML.rows[i].cells[j].style.borderRight  = (rightHidden)  ? border : '';
+                table.rows[i].cells[j].style.borderTop    = (topHidden)    ? border : '';
+                table.rows[i].cells[j].style.borderBottom = (bottomHidden) ? border : '';
+                table.rows[i].cells[j].style.borderLeft   = (leftHidden)   ? border : '';
+                table.rows[i].cells[j].style.borderRight  = (rightHidden)  ? border : '';
 
                 // // top left border
 
@@ -244,7 +203,7 @@ function updateUI(boardHTML, board, boardSize, status, youWin) {
                 //     div.style.top = '-32px';
                 //     div.style.left = '0px';
 
-                //     boardHTML.rows[i].cells[j].appendChild(div);
+                //     table.rows[i].cells[j].appendChild(div);
 
                 // }
 
@@ -263,7 +222,7 @@ function updateUI(boardHTML, board, boardSize, status, youWin) {
                 //     div.style.top = '-32px';
                 //     div.style.left = '45px';
 
-                //     boardHTML.rows[i].cells[j].appendChild(div);
+                //     table.rows[i].cells[j].appendChild(div);
 
                 // }
 
@@ -282,7 +241,7 @@ function updateUI(boardHTML, board, boardSize, status, youWin) {
                 //     div.style.top = '13px';
                 //     div.style.left = '0px';
 
-                //     boardHTML.rows[i].cells[j].appendChild(div);
+                //     table.rows[i].cells[j].appendChild(div);
 
                 // }
 
@@ -301,14 +260,14 @@ function updateUI(boardHTML, board, boardSize, status, youWin) {
                 //     div.style.top = '13px';
                 //     div.style.left = '45px';
 
-                //     boardHTML.rows[i].cells[j].appendChild(div);
+                //     table.rows[i].cells[j].appendChild(div);
 
                 // }
                 
             }
             
             // else {
-            //     boardHTML.rows[i].cells[j].style.border = '';
+            //     table.rows[i].cells[j].style.border = '';
             //     for (const cornerBorder of document.getElementsByClassName('cornerBorder')) {
             //         cornerBorder.style.visibility = 'hidden';
             //     }
@@ -317,13 +276,13 @@ function updateUI(boardHTML, board, boardSize, status, youWin) {
         }
     }
 
-    if (status == 'game over') {
-        statusHTML.innerHTML = youWin ? 'You Win!' : 'You Lose!';
-    }
+    // if (state.status == 'game over') {
+    //     statusHTML.innerHTML = state.youWin ? 'You Win!' : 'You Lose!';
+    // }
 
 }
 
-function getSurroundingCoords(x, y, boardSize) {
+function getSurroundingCoords(x, y, tableSize) {
 
     let allPossibleCoords = [
         [x-1, y-1], [x-1, y], [x-1, y+1], 
@@ -331,13 +290,13 @@ function getSurroundingCoords(x, y, boardSize) {
         [x+1, y-1], [x+1, y], [x+1, y+1]
     ];
 
-    return allPossibleCoords.filter(c => 0 <= c[0] && c[0] <= boardSize - 1 && 0 <= c[1] && c[1] <= boardSize - 1);
+    return allPossibleCoords.filter(c => 0 <= c[0] && c[0] <= tableSize - 1 && 0 <= c[1] && c[1] <= tableSize - 1);
 
 }
 
-function elemInList(elem, list) {
-    for (let listElem of list) {
-        if (elem === listElem) {
+function cellIsHidden(i, j) {
+    for (let listElem of table.rows[i].cells[j].className.split(' ')) {
+        if ('hidden' === listElem) {
             return true;
         }
     }
