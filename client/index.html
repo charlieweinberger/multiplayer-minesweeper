@@ -4,16 +4,20 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script defer src="minesweeperUI.js"></script>
+
+    <link rel="stylesheet" href="appUI.css">
     <link rel="stylesheet" href="minesweeperUI.css">
 
     <title>Minesweeper</title>
 
 </head>
 <body>
+
+    <div class="header">
+        <p>Minesweeper</p>
+    </div>
     
-    <table id="board1" cellspacing="0" cellpadding="0"></table>
-    <table id="board2" cellspacing="0" cellpadding="0"></table>
-    <div id="status"></div>
+    <div class="row" id="row"></div>
 
 </body>
 </html>

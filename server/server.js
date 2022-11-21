@@ -77,12 +77,18 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log(`Client socket disconnected: ${socket.id}`);
+        // game.display('remove socket');
         delete clientSockets[socket.id];
     });
 
     socket.on('click', (click) => {
         console.log(`new click: ${click}`);
         clientSockets[socket.id].game.registerClick(click);
+    });
+
+    socket.on('tell broadcaster-initialize game', (state) => {
+        console.log(`tell broadcaster-initialize game`);
+        io.to(state.stateId).emit('respond to initialize game', state);
     });
 
 });

@@ -13,35 +13,33 @@ class Minesweeper {
 
     }
 
+    // display
+
     display(message='update game') {
 
         for (let socketId in this.clientSockets) {
             if (socketId == this.socketId) {
 
+                let state = {
+                    id: socketId,
+                    board: this.board,
+                    boardSize: this.boardSize,
+                    numMines: this.numMines,
+                    status: this.status,
+                    youWin: this.youWin
+                };
+
                 let socket = this.clientSockets[socketId].socket;
 
-                socket.emit(message, {
-                    id: socketId,
-                    board: this.board,
-                    boardSize: this.boardSize,
-                    numMines: this.numMines,
-                    status: this.status,
-                    youWin: this.youWin
-                });
-
-                socket.broadcast.emit(`broadcast-${message}`, {
-                    id: socketId,
-                    board: this.board,
-                    boardSize: this.boardSize,
-                    numMines: this.numMines,
-                    status: this.status,
-                    youWin: this.youWin
-                });
+                socket.emit(message, state);
+                socket.broadcast.emit(`broadcast-${message}`, state);
 
             }
         }
         
     }
+
+    // game
 
     initialize() {
         this.createBoard();

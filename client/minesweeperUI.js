@@ -2,58 +2,140 @@ let socket = io();
 
 socket.emit('connection');
 
-let board1HTML;
-let board2HTML;
-let statusHTML;
+// socketry
 
 socket.on('initialize game', (state) => {
-    updateElementsById();
-    createBoard(board1HTML, state.board, state.boardSize);
-    createBoard(board2HTML, state.board, state.boardSize);
-    createEventListeners();
+    console.log('initialize game');
+    table = createGame(state.id, state.board, state.boardSize);
+    createEventListeners(table);
 });
 
 socket.on('broadcast-initialize game', (state) => {
-    updateElementsById();
-    if (board2HTML.rows.length == 0) createBoard(board2HTML, state.board, state.boardSize);
+
+    console.log('broadcast-initialize game');
+
+    createGame(state.id, state.board, state.boardSize);
+
+    let tableToEmit = getTableById(socket.id);
+    let tableToReallyEmit = [];
+    let tableToReallyReallyEmit = [];
+
+    for (let i = 0; i < state.boardSize; i++) {
+        tableToReallyEmit.push([]);
+        for (let j = 0; j < state.boardSize; j++) {
+            tableToReallyEmit.push([]);
+        }
+    }
+
+    for (let i = 0; i < state.boardSize; i++) {
+        for (let j = 0; j < state.boardSize; j++) {
+            tableToReallyEmit[i][j] = {
+                innerHTML: tableToEmit.rows[i].cells[j].innerHTML,
+                className: tableToEmit.rows[i].cells[j].className
+            }
+        }
+    }
+
+    for (let i = 0; i < state.boardSize; i++) {
+        if (tableToReallyEmit[i] != []) {
+            tableToReallyReallyEmit.push(tableToReallyEmit[i]);
+        }
+    }
+
+    socket.emit('tell broadcaster-initialize game', {
+        stateId: state.id,
+        socketId: socket.id,
+        boardSize: state.boardSize,
+        tableToReallyReallyEmit: tableToReallyReallyEmit
+    });
+
+});
+
+socket.on('respond to initialize game', (state) => {
+    console.log('respond to initialize game');
+    createGame(state.socketId, state.tableToReallyReallyEmit, state.boardSize, true);
 });
 
 socket.on('update game', (state) => {
-    updateElementsById();
-    updateUI(board1HTML, state.board, state.boardSize, state.status, state.youWin);
+    console.log('update game');
+    updateUI(getTableById(state.id), state.board, state.boardSize, state.status, state.youWin);
 });
 
 socket.on('broadcast-update game', (state) => {
-    updateElementsById();
-    updateUI(board2HTML, state.board, state.boardSize, state.status, state.youWin);
+    console.log('broadcast-update game');
+    updateUI(getTableById(state.id), state.board, state.boardSize, state.status, state.youWin);
 });
 
-function updateElementsById() {
-    board1HTML = document.getElementById("board1");
-    board2HTML = document.getElementById("board2");
-    statusHTML = document.getElementById("status");
+// socket.on('remove socket', (state) => {
+//     console.log('remove socket');
+// });
+
+// socket.on('broadcast-remove socket', (state) => {
+//     console.log('broadcast-remove socket');
+// });
+
+// helper functions
+
+function getTableById(id) {
+    for (let table of document.getElementsByClassName("table")) {
+        if (table.id == `table-${id}`) {
+            return table;
+        }
+    }
 }
 
-function createBoard(boardHTML, board, boardSize) {
+function createGame(id, board, boardSize, filled=false) {
+
+    // create divs
+
+    const column = document.createElement("div");
+    column.setAttribute('class', 'column');
+    column.setAttribute('id', `column-${id}`);
+    column.innerHTML = id;
+
+    const boardDiv = document.createElement("div");
+    boardDiv.setAttribute('class', 'boardDiv');
+    boardDiv.setAttribute('id', `boardDiv-${id}`);
+
+    const table = document.createElement("table");
+    table.setAttribute('class', 'table');
+    table.setAttribute('id', `table-${id}`);
+    table.setAttribute('cellspacing', '0');
+    table.setAttribute('cellpadding', '0');
+
+    // create table
 
     for (let i = 0; i < boardSize; i++) {
-        let row = boardHTML.insertRow();
+        let row = table.insertRow();
         for (let j = 0; j < boardSize; j++) {
             
             let square = row.insertCell();
 
-            for (let className of board[j][i].classList) {
-                square.classList.add(className);
+            if (filled) {
+                square.innerHTML = board[i][j].innerHTML;
+                square.className = board[i][j].className;
+            } else {
+                for (let className of board[j][i].classList) {
+                    square.classList.add(className);
+                }
             }
 
         }
     }
 
+    // add divs
+
+    boardDiv.appendChild(table);
+    column.appendChild(boardDiv);
+    document.getElementById("row").appendChild(column);
+    
+    return table;
+
 }
 
-function createEventListeners() {
+function createEventListeners(table) {
 
-    board1HTML.addEventListener('click', e => {
+    table.addEventListener('click', e => {
 
         let x = e.target.parentElement.rowIndex;
         let y = e.target.cellIndex;
@@ -68,7 +150,7 @@ function createEventListeners() {
 
     });
 
-    board1HTML.addEventListener('contextmenu', e => {
+    table.addEventListener('contextmenu', e => {
         
         e.preventDefault();
 
@@ -86,6 +168,8 @@ function createEventListeners() {
     });
 
 }
+
+// update game
 
 function updateUI(boardHTML, board, boardSize, status, youWin) {
     

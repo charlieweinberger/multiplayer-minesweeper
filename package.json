@@ -5,6 +5,9 @@
   "main": "index.js",
   "type": "module",
   "author": "Charlie Weinberger",
+  "scripts": {
+    "start": "node server/server.js"
+  },
   "license": "ISC",
   "dependencies": {
     "debug": "^4.1.1",

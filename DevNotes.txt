@@ -25,5 +25,5 @@ App UI:
     - add a chat
 
 Backend:
-    - make it so infinite players can join (given enough space on the screen)
-        - Fields are added as players join
+    - remove tables when sockets disconnect
+    - make player class
