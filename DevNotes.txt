@@ -11,7 +11,6 @@ Game UI:
     - fix corner borders
     - get the correct font & font size
     - add the correct images for flags and mines
-    - make game look like original minesweeper game
 
 App UI:
     - move winning status ("You Win/Lose!") to inside the game
@@ -21,8 +20,12 @@ App UI:
         - start button
         - pause button
         - allow players to decide if they want the same field or different fields
-    - add a chat
 
 Backend:
-    - fix current bugs
+    - Maximum of 4 players
+    - make it so you can join someone else's game only with a code
     - make player class
+
+Eventually:
+    - make alternative game that looks like the original minesweeper game
+    - add a chat

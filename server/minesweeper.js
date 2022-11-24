@@ -137,7 +137,7 @@ class Minesweeper {
             this.youWin = false;
         } else {
             this.addNumMinesAround(x, y);
-            if (this.table[y][x].innerHTML === '') {
+            if (this.table[x][y].innerHTML === '') {
                 this.revealSurroundingSquares(x, y);
             }
         }
@@ -171,7 +171,7 @@ class Minesweeper {
     
     addNumMinesAround(x, y) {
         let numMinesAroundSquare = this.numMinesAround(x, y);
-        this.table[y][x].innerHTML = numMinesAroundSquare === 0 ? '' : numMinesAroundSquare;
+        this.table[x][y].innerHTML = numMinesAroundSquare === 0 ? '' : numMinesAroundSquare;
     }
 
     numMinesAround(x, y) {
@@ -199,31 +199,31 @@ class Minesweeper {
     }
 
     isAClickedSquare(x, y) {
-        return this.table[y][x].className.includes('clickedSquare');
+        return this.table[x][y].className.includes('clickedSquare');
     }
 
     isAFlag(x, y) {
-        return this.table[y][x].className.includes('flag');
+        return this.table[x][y].className.includes('flag');
     }
 
     isAMine(x, y) {
-        return this.table[y][x].className.includes('mine');
+        return this.table[x][y].className.includes('mine');
     }
 
     addClass(x, y, className) {
         if (!this.isAClickedSquare(x, y)) {
-            this.table[y][x].className += ` ${className}`;
+            this.table[x][y].className += ` ${className}`;
         }
     }
 
     removeClass(x, y, className) {
         let newClassName = '';
-        for (let classElem of this.table[y][x].className.split(' ')) {
+        for (let classElem of this.table[x][y].className.split(' ')) {
             if (classElem != className) {
                 newClassName += `${classElem} `;
             }
         }
-        this.table[y][x].className = newClassName.slice(0, -1);
+        this.table[x][y].className = newClassName.slice(0, -1);
     }
 
     randomInteger(min, max) {

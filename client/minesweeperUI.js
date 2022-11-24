@@ -150,155 +150,76 @@ function updateUI(table, state) {
                 8: '#d3d3d3'
             };
 
-            table.rows[i].cells[j].innerHTML = `<b>${state.table[j][i].innerHTML}</b>`;
-            table.rows[i].cells[j].className = state.table[j][i].className;
-            table.rows[i].cells[j].style.color = colorMap[state.table[j][i].innerHTML];
+            table.rows[i].cells[j].innerHTML = state.table[i][j].innerHTML;
+            table.rows[i].cells[j].className = state.table[i][j].className;
+            table.rows[i].cells[j].style.color = colorMap[state.table[i][j].innerHTML];
 
         }
     }
-
-    // instead of checking for 'hidden', check for something else, so that mines being revealed don't remove the borders
 
     for (let i = 0; i < state.tableSize; i++) {
         for (let j = 0; j < state.tableSize; j++) {
-
-            if (state.table[j][i].innerHTML != '') {
-
-                const BORDER_WIDTH = '5px';
-                const BORDER_COLOR = '#87af3a';
-
-                let topHidden, bottomHidden, leftHidden, rightHidden, topLeftHidden, topRightHidden, bottomLeftHidden, bottomRightHidden;
-
-                if (i > 0)                   topHidden    = cellIsHidden(i-1, j);
-                if (i < state.tableSize - 1) bottomHidden = cellIsHidden(i+1, j);
-                if (j > 0)                   leftHidden   = cellIsHidden(i, j-1);
-                if (j < state.tableSize - 1) rightHidden  = cellIsHidden(i, j+1);
-
-                if (i > 0 && j > 0)                                     topLeftHidden     = cellIsHidden(i-1, j-1);
-                if (i > 0 && j < state.tableSize - 1)                   topRightHidden    = cellIsHidden(i-1, j+1);
-                if (i < state.tableSize - 1 && j > 0)                   bottomLeftHidden  = cellIsHidden(i+1, j-1);
-                if (i < state.tableSize - 1 && j < state.tableSize - 1) bottomRightHidden = cellIsHidden(i+1, j+1);
+            if (state.table[i][j].innerHTML != '') {
 
                 // side borders
 
-                const border = `${BORDER_WIDTH} solid ${BORDER_COLOR}`;
-                
-                table.rows[i].cells[j].style.borderTop    = (topHidden)    ? border : '';
-                table.rows[i].cells[j].style.borderBottom = (bottomHidden) ? border : '';
-                table.rows[i].cells[j].style.borderLeft   = (leftHidden)   ? border : '';
-                table.rows[i].cells[j].style.borderRight  = (rightHidden)  ? border : '';
+                let topHidden, bottomHidden, leftHidden, rightHidden;
 
-                // // top left border
+                if (i > 0)                   topHidden    = cellIsHidden(table, i-1, j);
+                if (i < state.tableSize - 1) bottomHidden = cellIsHidden(table, i+1, j);
+                if (j > 0)                   leftHidden   = cellIsHidden(table, i, j-1);
+                if (j < state.tableSize - 1) rightHidden  = cellIsHidden(table, i, j+1);
 
-                // if (topLeftHidden && !topHidden && !leftHidden) {
+                const border = '5px solid #87af3a';
 
-                //     let div = document.createElement("div");
-                //     div.className = 'cornerBorder';
-                    
-                //     div.style.width = BORDER_WIDTH;
-                //     div.style.height = BORDER_WIDTH;
-                //     div.style.background = BORDER_COLOR;
+                table.rows[i].cells[j].style.border = '';
 
-                //     div.style.position = 'relative';
-                //     div.style.top = '-32px';
-                //     div.style.left = '0px';
+                if (topHidden)    table.rows[i].cells[j].style.borderTop    = border;
+                if (bottomHidden) table.rows[i].cells[j].style.borderBottom = border;
+                if (leftHidden)   table.rows[i].cells[j].style.borderLeft   = border;
+                if (rightHidden)  table.rows[i].cells[j].style.borderRight  = border;
 
-                //     table.rows[i].cells[j].appendChild(div);
+                // corner borders
 
-                // }
+                // let topLeftHidden, topRightHidden, bottomLeftHidden, bottomRightHidden;
 
-                // // top right border
+                // if (i > 0 && j > 0)                                     topLeftHidden     = cellIsHidden(table, i-1, j-1);
+                // if (i > 0 && j < state.tableSize - 1)                   topRightHidden    = cellIsHidden(table, i-1, j+1);
+                // if (i < state.tableSize - 1 && j > 0)                   bottomLeftHidden  = cellIsHidden(table, i+1, j-1);
+                // if (i < state.tableSize - 1 && j < state.tableSize - 1) bottomRightHidden = cellIsHidden(table, i+1, j+1);
 
-                // if (topRightHidden && !topHidden && !rightHidden) {
-
-                //     let div = document.createElement("div");
-                //     div.className = 'cornerBorder';
-                    
-                //     div.style.width = BORDER_WIDTH;
-                //     div.style.height = BORDER_WIDTH;
-                //     div.style.background = BORDER_COLOR;
-
-                //     div.style.position = 'relative';
-                //     div.style.top = '-32px';
-                //     div.style.left = '45px';
-
-                //     table.rows[i].cells[j].appendChild(div);
-
-                // }
-
-                // // bottom left border
-
-                // if (bottomLeftHidden && !bottomHidden && !leftHidden) {
-
-                //     let div = document.createElement("div");
-                //     div.className = 'cornerBorder';
-                    
-                //     div.style.width = BORDER_WIDTH;
-                //     div.style.height = BORDER_WIDTH;
-                //     div.style.background = BORDER_COLOR;
-
-                //     div.style.position = 'relative';
-                //     div.style.top = '13px';
-                //     div.style.left = '0px';
-
-                //     table.rows[i].cells[j].appendChild(div);
-
-                // }
-
-                // // bottom right border
-
-                // if (bottomRightHidden && !bottomHidden && !rightHidden) {
-
-                //     let div = document.createElement("div");
-                //     div.className = 'cornerBorder';
-                    
-                //     div.style.width = BORDER_WIDTH;
-                //     div.style.height = BORDER_WIDTH;
-                //     div.style.background = BORDER_COLOR;
-
-                //     div.style.position = 'relative';
-                //     div.style.top = '13px';
-                //     div.style.left = '45px';
-
-                //     table.rows[i].cells[j].appendChild(div);
-
-                // }
+                // if (topLeftHidden     && !topHidden    && !leftHidden)  addCornerBorderDiv(table, i, j, '-2px', '0px');
+                // if (topRightHidden    && !topHidden    && !rightHidden) addCornerBorderDiv(table, i, j, '-2px', '45px');
+                // if (bottomLeftHidden  && !bottomHidden && !leftHidden)  addCornerBorderDiv(table, i, j, '43px', '0px');
+                // if (bottomRightHidden && !bottomHidden && !rightHidden) addCornerBorderDiv(table, i, j, '43px', '45px');
                 
             }
-            
-            // else {
-            //     table.rows[i].cells[j].style.border = '';
-            //     for (const cornerBorder of document.getElementsByClassName('cornerBorder')) {
-            //         cornerBorder.style.visibility = 'hidden';
-            //     }
-            // }
-
         }
     }
 
-    // if (state.status == 'game over') {
-    //     statusHTML.innerHTML = state.youWin ? 'You Win!' : 'You Lose!';
-    // }
-
 }
 
-function getSurroundingCoords(x, y, tableSize) {
-
-    let allPossibleCoords = [
-        [x-1, y-1], [x-1, y], [x-1, y+1], 
-        [x,   y-1], [x,   y], [x,   y+1], 
-        [x+1, y-1], [x+1, y], [x+1, y+1]
-    ];
-
-    return allPossibleCoords.filter(c => 0 <= c[0] && c[0] <= tableSize - 1 && 0 <= c[1] && c[1] <= tableSize - 1);
-
-}
-
-function cellIsHidden(i, j) {
+function cellIsHidden(table, i, j) {
     for (let listElem of table.rows[i].cells[j].className.split(' ')) {
-        if ('hidden' === listElem) {
+        if (listElem == 'hidden' || listElem == 'mine') {
             return true;
         }
     }
-    return false;
 }
+
+// function addCornerBorderDiv(table, i, j, top, left) {
+    
+//     let div = document.createElement("div");
+//     div.className = 'cornerBorder';
+    
+//     div.style.width = '5px';
+//     div.style.height = '5px';
+//     div.style.background = '#87af3a';
+
+//     div.style.position = 'relative';
+//     div.style.top = top;
+//     div.style.left = left;
+    
+//     table.rows[i].cells[j].prepend(div);
+
+// }
