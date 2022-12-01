@@ -3,19 +3,12 @@ let socket = io();
 socket.emit('connection');
 
 socket.on('initialize player', (id) => {
-
     console.log(`initialize player: ${id}`);
     createPlayer(id);
-
-    document.getElementById(`createGameButton-${id}`).addEventListener('click', event => {
-        socket.emit('create game');
-    });
-
 });
 
 socket.on('initialize game', (state) => {
     console.log(`initialize game: ${state.id}`);
-    document.getElementById("status").innerHTML += `initialize game: ${state.id} <br>`;
     removeButton(state.id);
     table = createGame(state.id, state);
     createEventListeners(table);
@@ -90,8 +83,9 @@ function createPlayer(id) {
     boardDiv.setAttribute('id', `boardDiv-${id}`);
 
     const button = document.createElement("Button");
-    column.setAttribute('id', `createGameButton-${id}`);
+    button.setAttribute('id', `createGameButton-${id}`);
     button.innerHTML = "Create game";
+    button.addEventListener('click', () => socket.emit('create game'));
 
     boardDiv.appendChild(button);
     column.appendChild(boardDiv);
@@ -100,14 +94,8 @@ function createPlayer(id) {
 }
 
 function removeButton(id) {
-    // const button = document.getElementById(`createGameButton-${id}`);
-    // button.remove();
-    document.getElementById('status').innerHTML += 'remove button <br>';
-    const boardDiv = document.getElementById(`boardDiv-${id}`);
-    const button = document.getElementById(`createGameButton-${id}`);
-    boardDiv.removeChild(button);
-    document.getElementById('status').innerHTML += 'button has been removed<br>';
-
+    let button = document.getElementById(`createGameButton-${id}`);
+    if (button.parentNode) button.parentNode.removeChild(button);
 }
 
 function createGame(id, state) {
