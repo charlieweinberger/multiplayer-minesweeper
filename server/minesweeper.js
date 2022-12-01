@@ -1,8 +1,8 @@
 class Minesweeper {
 
-    constructor(socket, tableSize, numMines) {
+    constructor(player, tableSize, numMines) {
 
-        this.socket = socket;
+        this.player = player;
         this.tableSize = tableSize;
         this.numMines = numMines;
 
@@ -17,7 +17,7 @@ class Minesweeper {
     display(message='update game') {
 
         let state = {
-            id: this.socket.id,
+            id: this.player.socket.id,
             table: this.table,
             tableSize: this.tableSize,
             numMines: this.numMines,
@@ -25,8 +25,8 @@ class Minesweeper {
             youWin: this.youWin
         };
 
-        this.socket.emit(message, state);
-        this.socket.broadcast.emit(`broadcast-${message}`, state);
+        this.player.socket.emit(message, state);
+        this.player.socket.broadcast.emit(`broadcast-${message}`, state);
         
     }
 

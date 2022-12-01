@@ -2,8 +2,21 @@ let socket = io();
 
 socket.emit('connection');
 
+socket.on('initialize player', (id) => {
+
+    console.log(`initialize player: ${id}`);
+    createPlayer(id);
+
+    document.getElementById(`createGameButton-${id}`).addEventListener('click', event => {
+        socket.emit('create game');
+    });
+
+});
+
 socket.on('initialize game', (state) => {
     console.log(`initialize game: ${state.id}`);
+    document.getElementById("status").innerHTML += `initialize game: ${state.id} <br>`;
+    removeButton(state.id);
     table = createGame(state.id, state);
     createEventListeners(table);
 });
@@ -65,9 +78,7 @@ function getTableById(id) {
     }
 }
 
-function createGame(id, state) {
-
-    // create divs
+function createPlayer(id) {
 
     const column = document.createElement("div");
     column.setAttribute('class', 'column');
@@ -78,13 +89,34 @@ function createGame(id, state) {
     boardDiv.setAttribute('class', 'boardDiv');
     boardDiv.setAttribute('id', `boardDiv-${id}`);
 
+    const button = document.createElement("Button");
+    column.setAttribute('id', `createGameButton-${id}`);
+    button.innerHTML = "Create game";
+
+    boardDiv.appendChild(button);
+    column.appendChild(boardDiv);
+    document.getElementById("row").appendChild(column);
+    
+}
+
+function removeButton(id) {
+    // const button = document.getElementById(`createGameButton-${id}`);
+    // button.remove();
+    document.getElementById('status').innerHTML += 'remove button <br>';
+    const boardDiv = document.getElementById(`boardDiv-${id}`);
+    const button = document.getElementById(`createGameButton-${id}`);
+    boardDiv.removeChild(button);
+    document.getElementById('status').innerHTML += 'button has been removed<br>';
+
+}
+
+function createGame(id, state) {
+
     const table = document.createElement("table");
     table.setAttribute('class', 'table');
     table.setAttribute('id', `table-${id}`);
     table.setAttribute('cellspacing', '0');
     table.setAttribute('cellpadding', '0');
-
-    // create table
 
     for (let i = 0; i < state.tableSize; i++) {
         let row = table.insertRow();
@@ -95,12 +127,7 @@ function createGame(id, state) {
         }
     }
 
-    // add divs
-
-    boardDiv.appendChild(table);
-    column.appendChild(boardDiv);
-    document.getElementById("row").appendChild(column);
-    
+    document.getElementById(`boardDiv-${id}`).appendChild(table);
     return table;
 
 }

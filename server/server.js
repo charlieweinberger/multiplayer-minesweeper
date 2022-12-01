@@ -2,7 +2,9 @@ import { createServer } from 'http';
 import { readFile } from 'fs';
 import { extname as _extname } from 'path';
 import { Server } from 'socket.io';
+
 import Minesweeper from './minesweeper.js';
+import Player from './player.js';
 
 const app = createServer(requestHandler).listen(3000);
 const io = new Server(app);
@@ -61,10 +63,9 @@ io.on('connection', (socket) => {
     console.log('Socket.io started...');
 
     socket.on('connection', () => {
-        console.log(`Client socket connected: ${socket.id}`);
-        sockets[socket.id] = new Minesweeper(socket, 10, 15);
-        sockets[socket.id].createTable();
-        sockets[socket.id].display('initialize game');
+        console.log(`Client socket connected (new user): ${socket.id}`);
+        sockets[socket.id] = new Player(socket);
+        socket.emit('initialize player', socket.id);
     });
 
     socket.on('disconnect', () => {
@@ -73,9 +74,16 @@ io.on('connection', (socket) => {
         delete sockets[socket.id];
     });
 
+    socket.on('create game', () => {
+        console.log(`Create game: ${socket.id}`);
+        sockets[socket.id].game = new Minesweeper(sockets[socket.id], 10, 15);
+        sockets[socket.id].game.createTable();
+        sockets[socket.id].game.display('initialize game');
+    });
+
     socket.on('click', (click) => {
         console.log(`new click: ${click}`);
-        sockets[socket.id].registerClick(click);
+        sockets[socket.id].game.registerClick(click);
     });
 
     socket.on('tell broadcaster-initialize game', (state) => {
