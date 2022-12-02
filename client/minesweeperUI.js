@@ -1,40 +1,42 @@
 let socket = io();
-
-createEventListeners();
-
 socket.emit('connection');
 
-socket.on('update UI', (room) => {
+// socketry
 
-    document.getElementById("roomCode").innerHTML = `Code: ${room.code}`;
+socket.on('new room', (code) => socket.emit('new room', code));
+
+socket.on('update UI', (info) => {
+
+    const code = info.room.code;
+
+    console.log(`update socket ${socket.id} in room ${code}`);
+
+    document.getElementById("roomCode").innerHTML = `Code: ${code}`;
 
     const clientsInRoomHTML = document.getElementById("clientsInRoom");
     clientsInRoomHTML.innerHTML = 'Clients: ';
-    for (const socketId of room.socketIdList) {
+    for (const socketId of info.room.socketIdList) {
         clientsInRoomHTML.innerHTML += `${socketId}, `;
     }
 
+    document.getElementById("leaveRoom").addEventListener('click', () => socket.emit('new room', code));
+
 });
 
-function createEventListeners() {
-    
+// event listeners
+
+document.getElementById("inputForm").addEventListener('submit', (e) => {
+
     const inputTextHTML = document.getElementById("inputText");
-    const inputFormHTML = document.getElementById("inputForm");
+    console.log(inputTextHTML.value);
+    e.preventDefault();
 
-    inputFormHTML.addEventListener('submit', (e) => {
+    if (inputTextHTML.value !== '') {
+        socket.emit('new room', inputTextHTML.value);
+        inputTextHTML.value = '';
+        errorText.innerHTML = '';
+    } else {
+        errorText.innerHTML = 'You must input something!';
+    }
 
-        console.log(inputTextHTML.value);
-
-        e.preventDefault();
-
-        if (inputTextHTML.value !== '') {
-            socket.emit('join room', inputTextHTML.value);
-            inputTextHTML.value = '';
-            errorText.innerHTML = '';
-        } else {
-            errorText.innerHTML = 'You must input something!';
-        }
-
-    });
-
-}
+});

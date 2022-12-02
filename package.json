@@ -6,7 +6,7 @@
   "type": "module",
   "author": "Charlie Weinberger",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server/server.js"
   },
   "license": "ISC",
   "dependencies": {
