@@ -3,9 +3,6 @@ import { readFile } from 'fs';
 import { extname as _extname } from 'path';
 import { Server } from 'socket.io';
 
-import Minesweeper from './minesweeper.js';
-import Player from './player.js';
-
 const port = 3000;
 const app = createServer(requestHandler).listen(port);
 const io = new Server(app);
@@ -57,14 +54,13 @@ function requestHandler(request, response) {
 
 }
 
-const sockets = {};
-// const rooms = {};
+const rooms = {};
 
-// function randomId() {
-//     let id = Math.floor(1000 + Math.random() * 9000);
-//     if (id in rooms) return randomId();
-//     return id;
-// }
+function randomCode() {
+    let code = Math.floor(1000 + Math.random() * 9000).toString();
+    if (code in rooms) return randomCode();
+    return code;
+}
 
 io.on('connection', (socket) => {
 
@@ -72,42 +68,30 @@ io.on('connection', (socket) => {
 
     socket.on('connection', () => {
         
-        console.log(`Client socket connected (new user): ${socket.id}`);
+        console.log(`Client socket connected: ${socket.id}`);
+       
+        const code = randomCode();
+        socket.join(code);
+        rooms[code] = { code: code, socketIdList: [socket.id] };
+        
+        console.log(`create room: ${code}`);
 
-        // const id = randomId();
-        // socket.join(id);
-        // rooms[id] = {
-        //     id: id,
-        //     socketList: [socket],
-        // };
-
-        sockets[socket.id] = new Player(socket);
-
-        socket.emit('initialize player', socket.id);
-
+        io.to(code).emit('update UI', rooms[code]);
+    
     });
 
-    socket.on('disconnect', () => {
-        console.log(`Client socket disconnected: ${socket.id}`);
-        io.emit('remove socket', socket.id);
-        delete sockets[socket.id];
+    socket.on('join room', (code) => {
+        console.log(`join room: ${code}`);
+        socket.join(code);
+        rooms[code].socketIdList.push(socket.id);
+        io.to(code).emit('update UI', rooms[code]);
     });
 
-    socket.on('create game', () => {
-        console.log(`Create game: ${socket.id}`);
-        sockets[socket.id].game = new Minesweeper(sockets[socket.id], 10, 15);
-        sockets[socket.id].game.createTable();
-        sockets[socket.id].game.display('initialize game');
-    });
-
-    socket.on('click', (click) => {
-        console.log(`new click: ${click}`);
-        sockets[socket.id].game.registerClick(click);
-    });
-
-    socket.on('tell broadcaster-initialize game', (state) => {
-        console.log(`tell broadcaster-initialize game`);
-        io.to(state.stateId).emit('respond to initialize game', state);
+    socket.on('leave room', (code) => {
+        console.log(`leave room: ${code}`);
+        socket.join(code);
+        rooms[code].socketIdList.push(socket.id);
+        io.to(code).emit('update UI', rooms[code]);
     });
 
 });
