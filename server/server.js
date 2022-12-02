@@ -6,10 +6,11 @@ import { Server } from 'socket.io';
 import Minesweeper from './minesweeper.js';
 import Player from './player.js';
 
-const app = createServer(requestHandler).listen(3000);
+const port = 3000;
+const app = createServer(requestHandler).listen(port);
 const io = new Server(app);
 
-console.log('HTTP Server running at localhost:3000');
+console.log(`Http server running at localhost:${port}`);
 
 function requestHandler(request, response) {
 
@@ -57,15 +58,33 @@ function requestHandler(request, response) {
 }
 
 const sockets = {};
+// const rooms = {};
+
+// function randomId() {
+//     let id = Math.floor(1000 + Math.random() * 9000);
+//     if (id in rooms) return randomId();
+//     return id;
+// }
 
 io.on('connection', (socket) => {
 
     console.log('Socket.io started...');
 
     socket.on('connection', () => {
+        
         console.log(`Client socket connected (new user): ${socket.id}`);
+
+        // const id = randomId();
+        // socket.join(id);
+        // rooms[id] = {
+        //     id: id,
+        //     socketList: [socket],
+        // };
+
         sockets[socket.id] = new Player(socket);
+
         socket.emit('initialize player', socket.id);
+
     });
 
     socket.on('disconnect', () => {

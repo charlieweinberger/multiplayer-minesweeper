@@ -5,13 +5,14 @@ socket.emit('connection');
 socket.on('initialize player', (id) => {
     console.log(`initialize player: ${id}`);
     createPlayer(id);
+    createAppEventListeners();
 });
 
 socket.on('initialize game', (state) => {
     console.log(`initialize game: ${state.id}`);
     removeButton(state.id);
     table = createGame(state.id, state);
-    createEventListeners(table);
+    createGameEventListeners(table);
 });
 
 socket.on('broadcast-initialize game', (state) => {
@@ -85,7 +86,6 @@ function createPlayer(id) {
     const button = document.createElement("Button");
     button.setAttribute('id', `createGameButton-${id}`);
     button.innerHTML = "Create game";
-    button.addEventListener('click', () => socket.emit('create game'));
 
     boardDiv.appendChild(button);
     column.appendChild(boardDiv);
@@ -120,7 +120,36 @@ function createGame(id, state) {
 
 }
 
-function createEventListeners(table) {
+function createAppEventListeners(id) {
+    
+    const button = document.getElementById(`createGameButton-${id}`);
+    
+    // const promptTextHTML = document.getElementById("promptText");
+    // const errorTextHTML  = document.getElementById("errorText");
+    // const inputFormHTML  = document.getElementById("inputForm");
+    // const inputTextHTML  = document.getElementById("inputText");
+
+    button.addEventListener('click', () => socket.emit('create game'));
+
+    // inputFormHTML.addEventListener('submit', (e) => {
+
+    //     console.log(inputTextHTML.value);
+
+    //     e.preventDefault();
+
+    //     if (inputTextHTML.value !== '') {
+    //         socket.emit('join room', inputTextHTML.value);
+    //         inputTextHTML.value = '';
+    //         errorText.innerHTML = '';
+    //     } else {
+    //         errorText.innerHTML = 'You must input something!';
+    //     }
+
+    // });
+
+}
+
+function createGameEventListeners(table) {
 
     table.addEventListener('mousedown', event => {
 
