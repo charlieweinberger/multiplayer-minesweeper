@@ -67,7 +67,7 @@ function generateRoomCode() {
 
 io.on('connection', (socket) => {
 
-    console.log('\nSocket.io started...');
+    console.log('Socket.io started...');
 
     socket.on('connection', () => {
         console.log(`Socket connected: ${socket.id}`);
@@ -79,21 +79,7 @@ io.on('connection', (socket) => {
 
     socket.on('new room', (code) => {
 
-        // leave all current rooms
-
-        leaveRoom(socket);
-
-        // for (let roomCode of Array.from(socket.rooms)) { // loop through all rooms the socket is in
-        
-        //     socket.leave(roomCode); // leave old room
-            
-        //     if (Object.keys(rooms).length > 0 && Object.keys(rooms).includes(roomCode)) {
-        //         const index = rooms[roomCode].socketIdList.indexOf(socket.id);
-        //         rooms[roomCode].socketIdList.splice(index, 1); // remove old room from socket list
-        //         if (rooms[roomCode].socketIdList.length === 0) delete rooms[roomCode]; // remove room from room list if there are no sockets
-        //     }
-    
-        // }
+        removeFromRooms(socket, true); // leave room(s)
 
         // join room
 
@@ -127,22 +113,24 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log(`Socket disconnected: ${socket.id}`);
         delete users[socket.id]; // remove socket from users
-        leaveRoom(socket); // remove socket from rooms
+        removeFromRooms(socket, false); // remove socket from rooms
     });
 
 });
 
-function leaveRoom(socket) {
-    for (let roomCode of Object.keys(rooms)) {
-        socket.leave(roomCode); // leave old room
-        const index = rooms[roomCode].socketIdList.indexOf(socket.id);
-        rooms[roomCode].socketIdList.splice(index, 1); // remove old room from socket list
-        if (rooms[roomCode].socketIdList.length === 0) delete rooms[roomCode]; // remove room from rooms if there are no sockets
+function removeFromRooms(socket, leaveRoom) {
+    for (let roomCode of Object.keys(rooms)) { // loop through all rooms
+        if (rooms[roomCode].socketIdList.includes(socket.id)) { // if socket is in a room
+            if (leaveRoom) socket.leave(roomCode); // leave room
+            const index = rooms[roomCode].socketIdList.indexOf(socket.id);
+            rooms[roomCode].socketIdList.splice(index, 1); // remove old room from socket list
+            if (rooms[roomCode].socketIdList.length === 0) delete rooms[roomCode]; // remove room from rooms if there are no sockets
+        }
     }
 }
 
 function printUserAndRoomInfo() {
     console.log(`\nusers and rooms:`);
-    for (let user of Object.values(users)) console.log(`user @ socket ${user.socketId} in room ${user.code}`);
-    for (let room of Object.values(rooms)) console.log(`room ${room.code} socketIdList: ${room.socketIdList}`);
+    console.log(Object.values(users));
+    console.log(Object.values(rooms));
 }

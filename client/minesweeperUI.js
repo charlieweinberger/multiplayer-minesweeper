@@ -9,8 +9,7 @@ socket.on('new room', (code) => socket.emit('new room', code));
 
 socket.on('update socket', (socketInfo) => {
 
-    // console.log(`update socket ${socket.id} in room ${socketInfo.room.code}`);
-    document.getElementById("status").innerHTML = `update socket ${socket.id} in room ${socketInfo.room.code}`;
+    console.log(`update socket ${socket.id} in room ${socketInfo.room.code}`);
     document.getElementById("roomCode").innerHTML = `Code: ${socketInfo.room.code}`;
     
     const clientsInRoomHTML = document.getElementById("clientsInRoom");
@@ -22,10 +21,9 @@ socket.on('update socket', (socketInfo) => {
     
 });
 
-socket.on('update other socket', (socketInfo) => {
+socket.on('update other sockets', (socketInfo) => {
     
-    // console.log(`update socket ${socket.id} in room ${socketInfo.room.code}`);
-    document.getElementById("status").innerHTML = `update socket ${socketInfo.socketId} in socket ${socket.id} in room ${socket.rooms}`;
+    console.log(`update socket ${socketInfo.socketId} in socket ${socket.id} in room ${socketInfo.room.code}`);
     document.getElementById("roomCode").innerHTML = `Code: ${socketInfo.room.code}`;
 
     const clientsInRoomHTML = document.getElementById("clientsInRoom");
