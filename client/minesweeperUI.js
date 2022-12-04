@@ -18,6 +18,8 @@ socket.on('update socket', (socketInfo) => {
         const isThisYou = (socket.id === socketInfo.socketId) ? ' (you)' : '';
         clientsInRoomHTML.innerHTML += `${socketId}${isThisYou}, `;
     }
+
+    document.getElementById("leaveRoom").addEventListener('click', () => socket.emit('new room', socketInfo.room.code));
     
 });
 
@@ -33,11 +35,11 @@ socket.on('update other sockets', (socketInfo) => {
         clientsInRoomHTML.innerHTML += `${socketId}${isThisYou}, `;
     }
     
+    document.getElementById("leaveRoom").addEventListener('click', () => socket.emit('new room', socketInfo.room.code));
+
 });
 
 function createEventListeners() {
-
-    document.getElementById("leaveRoom").addEventListener('click', () => socket.emit('new room', code));
 
     document.getElementById("inputForm").addEventListener('submit', (e) => {
 
