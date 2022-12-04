@@ -22,10 +22,7 @@ App UI:
         - allow players to decide if they want the same field or different fields
 
 Backend:
-    - make player class
-        - When a socket connects, instead of creating a game, create a player, who then starts a game by pressing a button
     - Maximum of 4 players
-    - make it so you can join someone else's game only with a code
 
 Eventually:
     - add a chat

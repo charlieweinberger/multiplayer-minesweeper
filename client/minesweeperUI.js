@@ -1,12 +1,66 @@
 let socket = io();
-
 socket.emit('connection');
 
-socket.on('initialize player', (id) => {
-    console.log(`initialize player: ${id}`);
-    createPlayer(id);
-    createAppEventListeners();
+// room socketry
+
+socket.on('new room', (code) => socket.emit('new room', code));
+
+socket.on('new room for this socket', (socketInfo) => {
+
+    console.log(`new room for socket ${socket.id}: room ${socketInfo.room.code}`);
+    document.getElementById("roomCode").innerHTML = `Code: ${socketInfo.room.code}`;
+    
+    const clientsInRoomHTML = document.getElementById("clientsInRoom");
+    clientsInRoomHTML.innerHTML = 'Clients: ';
+    for (const socketId of socketInfo.room.socketIdList) {
+        const notYou = (socketId !== socket.id) ? 'not ' : '';
+        clientsInRoomHTML.innerHTML += `${socketId} (${notYou}you), `;
+    }
+
+    document.getElementById("leaveRoom").addEventListener('click', () => socket.emit('new room', socketInfo.room.code));
+    
 });
+
+// room event listeners
+
+document.getElementById("inputForm").addEventListener('submit', (e) => {
+
+    const inputTextHTML = document.getElementById("inputText");
+    e.preventDefault();
+
+    if (inputTextHTML.value !== '') {
+        socket.emit('new room', inputTextHTML.value);
+        inputTextHTML.value = '';
+        errorText.innerHTML = '';
+    } else {
+        errorText.innerHTML = 'You must input something!';
+    }
+
+});
+
+// initialize user
+
+socket.on('initialize user', (id) => {
+    console.log(`initialize user for socket ${id} (current socket is ${socket.id})`);
+    createUser(id);
+    document.getElementById(`createGameButton-${id}`).addEventListener('click', () => socket.emit('create game'));
+});
+
+socket.on('broadcast-initialize user', (id) => {
+    console.log(`broadcast-initialize user for socket ${socket.id} (current socket is ${socket.id})`);
+    createUser(id);
+    socket.emit('tell broadcasters-initialize user', {
+        id: id,
+        socketId: socket.id
+    });
+});
+
+socket.on('respond to initialize user', (state) => {
+    console.log(`respond to initialize user: ${state.socketId}`);
+    createUser(state.socketId);
+});
+
+// initialize game
 
 socket.on('initialize game', (state) => {
     console.log(`initialize game: ${state.id}`);
@@ -16,44 +70,22 @@ socket.on('initialize game', (state) => {
 });
 
 socket.on('broadcast-initialize game', (state) => {
-
     console.log(`broadcast-initialize game: ${state.id}`);
+    removeButton(state.id);
     createGame(state.id, state);
-
-    let table = [];
-    for (let i = 0; i < state.tableSize; i++) {
-        table.push([]);
-        for (let j = 0; j < state.tableSize; j++) {
-            table[i].push({
-                innerHTML: getTableById(socket.id).rows[i].cells[j].innerHTML,
-                className: getTableById(socket.id).rows[i].cells[j].className
-            });
-        }
-    }
-
-    socket.emit('tell broadcaster-initialize game', {
-        stateId: state.id,
-        socketId: socket.id,
-        table: table,
-        tableSize: state.tableSize
-    });
-
+    updateUI(getHTMLTableById(state.id), state);
 });
 
-socket.on('respond to initialize game', (state) => {
-    console.log(`respond to initialize game: ${state.socketId}`);
-    table = createGame(state.socketId, state);
-    updateUI(table, state);
-});
+// update game
 
 socket.on('update game', (state) => {
     console.log(`update game: ${state.id}`);
-    updateUI(getTableById(state.id), state);
+    updateUI(getHTMLTableById(state.id), state);
 });
 
 socket.on('broadcast-update game', (state) => {
     console.log(`broadcast-update game: ${state.id}`);
-    updateUI(getTableById(state.id), state);
+    updateUI(getHTMLTableById(state.id), state);
 });
 
 socket.on('remove socket', (id) => {
@@ -62,9 +94,9 @@ socket.on('remove socket', (id) => {
     element.remove();
 });
 
-// helper functions
+// game helper functions
 
-function getTableById(id) {
+function getHTMLTableById(id) {
     for (let table of document.getElementsByClassName("table")) {
         if (table.id == `table-${id}`) {
             return table;
@@ -72,7 +104,7 @@ function getTableById(id) {
     }
 }
 
-function createPlayer(id) {
+function createUser(id) {
 
     const column = document.createElement("div");
     column.setAttribute('class', 'column');
@@ -84,6 +116,7 @@ function createPlayer(id) {
     boardDiv.setAttribute('id', `boardDiv-${id}`);
 
     const button = document.createElement("Button");
+    button.setAttribute('class', 'button');
     button.setAttribute('id', `createGameButton-${id}`);
     button.innerHTML = "Create game";
 
@@ -120,34 +153,7 @@ function createGame(id, state) {
 
 }
 
-function createAppEventListeners(id) {
-    
-    const button = document.getElementById(`createGameButton-${id}`);
-    
-    // const promptTextHTML = document.getElementById("promptText");
-    // const errorTextHTML  = document.getElementById("errorText");
-    // const inputFormHTML  = document.getElementById("inputForm");
-    // const inputTextHTML  = document.getElementById("inputText");
-
-    button.addEventListener('click', () => socket.emit('create game'));
-
-    // inputFormHTML.addEventListener('submit', (e) => {
-
-    //     console.log(inputTextHTML.value);
-
-    //     e.preventDefault();
-
-    //     if (inputTextHTML.value !== '') {
-    //         socket.emit('join room', inputTextHTML.value);
-    //         inputTextHTML.value = '';
-    //         errorText.innerHTML = '';
-    //     } else {
-    //         errorText.innerHTML = 'You must input something!';
-    //     }
-
-    // });
-
-}
+// game event listeners
 
 function createGameEventListeners(table) {
 

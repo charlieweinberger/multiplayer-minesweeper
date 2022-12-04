@@ -4,13 +4,13 @@ import { extname as _extname } from 'path';
 import { Server } from 'socket.io';
 
 import Minesweeper from './minesweeper.js';
-import Player from './player.js';
+import User from './user.js';
 
 const port = 3000;
 const app = createServer(requestHandler).listen(port);
 const io = new Server(app);
 
-console.log(`Http server running at localhost:${port}`);
+console.log(`Http server running at localhost:${port}\n`);
 
 function requestHandler(request, response) {
 
@@ -57,14 +57,14 @@ function requestHandler(request, response) {
 
 }
 
-const sockets = {};
-// const rooms = {};
+const users = {};
+const rooms = {};
 
-// function randomId() {
-//     let id = Math.floor(1000 + Math.random() * 9000);
-//     if (id in rooms) return randomId();
-//     return id;
-// }
+function generateRoomCode() {
+    let code = Math.floor(1000 + Math.random() * 9000).toString();
+    if (code in rooms) return generateRoomCode();
+    return code;
+}
 
 io.on('connection', (socket) => {
 
@@ -72,42 +72,98 @@ io.on('connection', (socket) => {
 
     socket.on('connection', () => {
         
-        console.log(`Client socket connected (new user): ${socket.id}`);
+        console.log(`Socket connected: ${socket.id}`);
 
-        // const id = randomId();
-        // socket.join(id);
-        // rooms[id] = {
-        //     id: id,
-        //     socketList: [socket],
-        // };
+        const code = generateRoomCode(); // create room code
+        const user = new User(socket, code); // create user
+        users[socket.id] = user; // add user to user list
 
-        sockets[socket.id] = new Player(socket);
+        socket.emit('new room', code); // create room
+        socket.emit('initialize user', socket.id); // 
 
-        socket.emit('initialize player', socket.id);
+    });
+
+    socket.on('new room', (code) => {
+
+        removeFromRooms(socket, true); // leave room(s)
+
+        // join room
+
+        socket.join(code); // join room
+        users[socket.id].code = code; // update room code in user class
+
+        if (Object.hasOwn(rooms, code)) {
+            rooms[code].socketIdList.push(socket.id); // if the room exists in the room list, update the socket list
+        } else {
+            rooms[code] = { code: code, socketIdList: [socket.id] }; // if the room doesn't exist in the room list, creat the room
+        }
+
+        // update UI
+
+        io.in(code).emit('new room for this socket', {
+            socketId: socket.id,
+            room: rooms[code]
+        });
+
+        socket.to(code).emit('broadcast-initialize user', socket.id); // 
+
+        printUserAndRoomInfo(); // print to console
 
     });
 
     socket.on('disconnect', () => {
-        console.log(`Client socket disconnected: ${socket.id}`);
-        io.emit('remove socket', socket.id);
-        delete sockets[socket.id];
+
+        console.log(`Socket disconnected: ${socket.id}`);
+
+        if (Object.keys(users).includes(socket.id)) {
+            socket.to(users[socket.id].code).emit('remove socket', socket.id); // remove UI from other sockets in room
+        }
+
+        delete users[socket.id]; // remove socket from users
+        removeFromRooms(socket, true); // remove socket from rooms
+
     });
 
     socket.on('create game', () => {
         console.log(`Create game: ${socket.id}`);
-        sockets[socket.id].game = new Minesweeper(sockets[socket.id], 10, 15);
-        sockets[socket.id].game.createTable();
-        sockets[socket.id].game.display('initialize game');
+        const user = users[socket.id];
+        user.game = new Minesweeper(user, 10, 15);
+        user.game.createTable();
+        user.game.display('initialize game');
     });
 
     socket.on('click', (click) => {
         console.log(`new click: ${click}`);
-        sockets[socket.id].game.registerClick(click);
+        users[socket.id].game.registerClick(click);
     });
 
-    socket.on('tell broadcaster-initialize game', (state) => {
-        console.log(`tell broadcaster-initialize game`);
+    socket.on('tell broadcasters-initialize user', (state) => {
+        console.log(`tell broadcasters-initialize user`);
+        io.to(state.id).emit('respond to initialize user', state);
+        // socket.to("room1").emit('respond to initialize user', state);
+    });
+
+    socket.on('tell broadcasters-initialize game', (state) => {
+        console.log(`tell broadcasters-initialize game`);
         io.to(state.stateId).emit('respond to initialize game', state);
+        // socket.to("room1").emit('respond to initialize game', state);
     });
 
 });
+
+function removeFromRooms(socket, leaveRoom) {
+    for (let roomCode of Object.keys(rooms)) { // loop through all rooms
+        if (rooms[roomCode].socketIdList.includes(socket.id)) { // if socket is in a room
+            if (leaveRoom) socket.leave(roomCode); // leave room
+            const index = rooms[roomCode].socketIdList.indexOf(socket.id);
+            rooms[roomCode].socketIdList.splice(index, 1); // remove old room from socket list
+            if (rooms[roomCode].socketIdList.length === 0) delete rooms[roomCode]; // remove room from rooms if there are no sockets
+        }
+    }
+}
+
+function printUserAndRoomInfo() {
+    console.log(`\nusers and rooms:`);
+    console.log(Object.values(users));
+    console.log(Object.values(rooms));
+}
