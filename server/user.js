@@ -1,8 +1,9 @@
 class User {
 
-    constructor(socketId, code) {
-        this.socketId = socketId;
+    constructor(socket, code) {
+        this.socket = socket;
         this.code = code;
+        this.game = null;
     }
 
 }
