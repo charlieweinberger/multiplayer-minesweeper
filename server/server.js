@@ -95,7 +95,7 @@ io.on('connection', (socket) => {
         if (Object.hasOwn(rooms, code)) {
             rooms[code].socketIdList.push(socket.id); // if the room exists in the room list, update the socket list
         } else {
-            rooms[code] = { code: code, socketIdList: [socket.id] }; // if the room doesn't exist in the room list, creat the room
+            rooms[code] = { code: code, socketIdList: [socket.id] }; // if the room doesn't exist in the room list, create the room
         }
 
         // update UI
