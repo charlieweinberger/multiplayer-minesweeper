@@ -3,8 +3,9 @@ import { readFile } from 'fs';
 import { extname as _extname } from 'path';
 import { Server } from 'socket.io';
 
-import Minesweeper from './minesweeper.js';
+import Room from './room.js';
 import User from './user.js';
+import Minesweeper from './minesweeper.js';
 
 const port = 3000;
 const app = createServer(requestHandler).listen(port);
@@ -12,9 +13,9 @@ const io = new Server(app);
 
 console.log(`Http server running at localhost:${port}\n`);
 
-function requestHandler(request, response) {
+function requestHandler(req, res) {
 
-    let filePath = `./client${request.url}`;
+    let filePath = `./client${req.url}`;
     if (filePath == './client/') filePath += 'index.html';
 
     const extname = String(_extname(filePath)).toLowerCase();
@@ -42,70 +43,61 @@ function requestHandler(request, response) {
         if (error) {
             if (error.code == 'ENOENT') {
                 readFile('./404.html', (error, content) => {
-                    response.writeHead(404, { 'Content-Type': contentType });
-                    response.end(content, 'utf-8');
+                    res.writeHead(404, { 'Content-Type': contentType });
+                    res.end(content, 'utf-8');
                 });
             } else {
-                response.writeHead(500);
-                response.end(`Sorry, check with the site admin for error: ${error.code} ..\n`);
+                res.writeHead(500);
+                res.end(`Sorry, check with the site admin for error: ${error.code} ..\n`);
             }
         } else {
-            response.writeHead(200, { 'Content-Type': contentType });
-            response.end(content, 'utf-8');
+            res.writeHead(200, { 'Content-Type': contentType });
+            res.end(content, 'utf-8');
         }
     });
 
 }
 
-const users = {};
 const rooms = {};
-
-function generateRoomCode() {
-    let code = Math.floor(1000 + Math.random() * 9000).toString();
-    if (code in rooms) return generateRoomCode();
-    return code;
-}
+const users = {};
 
 io.on('connection', (socket) => {
 
     console.log('Socket.io started...');
 
     socket.on('connection', () => {
-        
+
         console.log(`Socket connected: ${socket.id}`);
 
-        const code = generateRoomCode(); // create room code
-        const user = new User(socket, code); // create user
-        users[socket.id] = user; // add user to user list
+        users[socket.id] = new User(socket); // create user and add to user list
 
-        socket.emit('new room', code); // create room
-        socket.emit('initialize user', socket.id); // 
+        socket.emit('new room', users[socket.id].code); // create room
+        socket.emit('initialize user', socket.id); // create user in room
 
     });
 
     socket.on('new room', (code) => {
 
-        removeFromRooms(socket, true); // leave room(s)
+        removeFromRooms(socket); // leave room(s)
 
         // join room
 
         socket.join(code); // join room
         users[socket.id].code = code; // update room code in user class
 
-        if (Object.hasOwn(rooms, code)) {
-            rooms[code].socketIdList.push(socket.id); // if the room exists in the room list, update the socket list
-        } else {
-            rooms[code] = { code: code, socketIdList: [socket.id] }; // if the room doesn't exist in the room list, create the room
+        if (!Object.hasOwn(rooms, code)) {
+            rooms[code] = new Room(code); // if the room doesn't exist in the room list, create the room
         }
+        rooms[code].sockets.push(socket); // update the socket list
 
-        // update UI
+        // update UI        
 
         io.in(code).emit('new room for this socket', {
             socketId: socket.id,
-            room: rooms[code]
+            room: rooms[code].toEmit()
         });
 
-        socket.to(code).emit('broadcast-initialize user', socket.id); // 
+        socket.to(code).emit('broadcast-initialize user', socket.id); // create this socket's user in other sockets in the new room
 
         printUserAndRoomInfo(); // print to console
 
@@ -120,7 +112,7 @@ io.on('connection', (socket) => {
         }
 
         delete users[socket.id]; // remove socket from users
-        removeFromRooms(socket, true); // remove socket from rooms
+        removeFromRooms(socket); // remove socket from rooms
 
     });
 
@@ -151,19 +143,26 @@ io.on('connection', (socket) => {
 
 });
 
-function removeFromRooms(socket, leaveRoom) {
+function removeFromRooms(socket) {
+
     for (let roomCode of Object.keys(rooms)) { // loop through all rooms
-        if (rooms[roomCode].socketIdList.includes(socket.id)) { // if socket is in a room
-            if (leaveRoom) socket.leave(roomCode); // leave room
-            const index = rooms[roomCode].socketIdList.indexOf(socket.id);
-            rooms[roomCode].socketIdList.splice(index, 1); // remove old room from socket list
-            if (rooms[roomCode].socketIdList.length === 0) delete rooms[roomCode]; // remove room from rooms if there are no sockets
+        const room = rooms[roomCode];
+        if (room.socketInRoom(socket)) { // if socket is in a room
+        
+            socket.leave(roomCode); // leave room
+            room.removeSocket(socket); // remove old room from socket list
+            
+            if (room.sockets.length === 0) {
+                delete rooms[roomCode]; // remove room from rooms if there are no sockets
+            }
+
         }
     }
+
 }
 
 function printUserAndRoomInfo() {
     console.log(`\nusers and rooms:`);
     console.log(Object.values(users));
-    console.log(Object.values(rooms));
+    console.log(Array.from(Object.values(rooms), room => room.toEmit()));
 }

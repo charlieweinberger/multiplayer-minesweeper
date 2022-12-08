@@ -9,10 +9,10 @@ socket.on('new room for this socket', (socketInfo) => {
 
     console.log(`new room for socket ${socket.id}: room ${socketInfo.room.code}`);
     document.getElementById("roomCode").innerHTML = `Code: ${socketInfo.room.code}`;
-    
+
     const clientsInRoomHTML = document.getElementById("clientsInRoom");
     clientsInRoomHTML.innerHTML = 'Clients: ';
-    for (const socketId of socketInfo.room.socketIdList) {
+    for (const socketId of socketInfo.room.sockets) {
         const notYou = (socketId !== socket.id) ? 'not ' : '';
         clientsInRoomHTML.innerHTML += `${socketId} (${notYou}you), `;
     }

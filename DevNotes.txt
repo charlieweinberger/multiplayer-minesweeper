@@ -10,7 +10,7 @@ Game UI:
             - https://www.spriters-resource.com/browser_games/googleminesweeper/sheet/171698/
     - move winning status to inside the game
 
-Player UI:
+User UI:
     - 
 
 App UI:

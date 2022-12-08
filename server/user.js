@@ -1,9 +1,13 @@
 class User {
 
-    constructor(socket, code) {
+    constructor(socket) {
         this.socket = socket;
-        this.code = code;
+        this.code = this.generateRoomCode();
         this.game = null;
+    }
+
+    generateRoomCode() {
+        return Math.floor(1000 + Math.random() * 9000).toString();
     }
 
 }
