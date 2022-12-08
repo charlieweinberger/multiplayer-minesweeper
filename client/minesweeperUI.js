@@ -12,7 +12,7 @@ socket.on('new room for this socket', (socketInfo) => {
 
     const clientsInRoomHTML = document.getElementById("clientsInRoom");
     clientsInRoomHTML.innerHTML = 'Clients: ';
-    for (const socketId of socketInfo.room.sockets) {
+    for (const socketId of socketInfo.room.socketIdList) {
         const notYou = (socketId !== socket.id) ? 'not ' : '';
         clientsInRoomHTML.innerHTML += `${socketId} (${notYou}you), `;
     }
