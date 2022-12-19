@@ -74,12 +74,22 @@ io.on('connection', (socket) => {
         users[socket.id] = user;
         rooms[user.room.code] = user.room;
 
-        socket.emit('new room', user.room.code); // create room
+        socket.emit('join room', user.room.code); // create room
         socket.emit('initialize user', socket.id); // create user in room
 
     });
 
-    socket.on('new room', (code) => {
+    socket.on('request to join room', (code) => {
+        if (rooms[code].socketIdList.includes(socket.id)) {
+            socket.emit('error in joining room', `You are already in room ${code}!`);
+        } else if (rooms[code].socketIdList.length === 4) {
+            socket.emit('error in joining room', `Room ${code} is full.`);
+        } else {
+            socket.emit('join room', code);
+        }
+    });
+
+    socket.on('join room', (code) => {
 
         removeFromRooms(socket); // leave room(s)
 
@@ -97,7 +107,7 @@ io.on('connection', (socket) => {
 
         // update UI        
 
-        io.in(code).emit('new room for this socket', {
+        io.in(code).emit('join room for this socket', {
             socketId: socket.id,
             room: rooms[code]
         });

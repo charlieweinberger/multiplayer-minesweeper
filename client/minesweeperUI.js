@@ -3,11 +3,12 @@ socket.emit('connection');
 
 // room socketry
 
-socket.on('new room', (code) => socket.emit('new room', code));
+socket.on('join room', (code) => socket.emit('join room', code));
+socket.on('request to join room', (code) => socket.emit('request to join room', code));
 
-socket.on('new room for this socket', (socketInfo) => {
+socket.on('join room for this socket', (socketInfo) => {
 
-    console.log(`new room for socket ${socket.id}: room ${socketInfo.room.code}`);
+    console.log(`join room for socket ${socket.id}: room ${socketInfo.room.code}`);
     document.getElementById("roomCode").innerHTML = `Code: ${socketInfo.room.code}`;
 
     const clientsInRoomHTML = document.getElementById("clientsInRoom");
@@ -17,8 +18,12 @@ socket.on('new room for this socket', (socketInfo) => {
         clientsInRoomHTML.innerHTML += `${socketId} (${notYou}you), `;
     }
 
-    document.getElementById("leaveRoom").addEventListener('click', () => socket.emit('new room', socketInfo.room.code));
+    document.getElementById("leaveRoom").addEventListener('click', () => socket.emit('request to join room', socketInfo.room.code));
     
+});
+
+socket.on('error in joining room', (message) => {
+    errorText.innerHTML = message;
 });
 
 // room event listeners
@@ -29,7 +34,7 @@ document.getElementById("inputForm").addEventListener('submit', (e) => {
     e.preventDefault();
 
     if (inputTextHTML.value !== '') {
-        socket.emit('new room', inputTextHTML.value);
+        socket.emit('request to join room', inputTextHTML.value);
         inputTextHTML.value = '';
         errorText.innerHTML = '';
     } else {

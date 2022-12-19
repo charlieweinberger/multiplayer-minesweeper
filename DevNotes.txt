@@ -20,9 +20,10 @@ App UI:
         - start button
         - pause button
         - allow players to decide if they want the same field or different fields
+    - format join screen
 
 Backend:
-    - Maximum of 4 players
+    - 
 
 Eventually:
     - add a chat
