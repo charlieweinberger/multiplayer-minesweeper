@@ -1,41 +1,42 @@
 class Room {
 
-    constructor(code) {
-        this.sockets = [];
+    constructor(socketIdList, code=this.generateRoomCode()) {
+        this.socketIdList = socketIdList;
         this.code = code;
+    }
+
+    generateRoomCode() {
+        return Math.floor(1000 + Math.random() * 9000).toString();
     }
 
     startCompetition() {
         // work on this
     }
 
-    toEmit() {
-        return {
-            sockets: this.sockets.map(socket => socket.id),
-            code: this.code,
-        };
-    }
-
-    socketInRoom(socket) {
-
-        for (let thisSocket of this.sockets) {
-            if (thisSocket.id == socket.id) {
-                return true;
-            }
+    addSocket(socketId) {
+        if (!this.socketIdList.includes(socketId)) {
+            this.socketIdList.push(socketId);
         }
-
-        return false;
-
     }
 
-    removeSocket(socket) {
-        for (let i = 0; i < this.sockets.length; i++) {
-            if (this.sockets[i].id == socket.id) {
-                this.sockets.splice(i, 1);
+    removeSocket(socketId) {
+        for (let i = 0; i < this.socketIdList.length; i++) {
+            if (this.socketIdList[i] == socketId) {
+                this.socketIdList.splice(i, 1);
                 return;
             }
         }
     }
+
+    checkForSocket(socketId) {
+        for (let socketIdElem of this.socketIdList) {
+            if (socketIdElem == socketId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 }
 

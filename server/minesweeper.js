@@ -1,15 +1,12 @@
 class Minesweeper {
 
     constructor(user, tableSize, numMines) {
-
         this.user = user;
         this.tableSize = tableSize;
         this.numMines = numMines;
-
         this.table = [];
         this.status = 'game initialized';
         this.youWin = null;
-
     }
 
     // display
@@ -26,7 +23,7 @@ class Minesweeper {
         };
 
         this.user.socket.emit(message, state);
-        this.user.socket.to(this.user.code).emit(`broadcast-${message}`, state);
+        this.user.socket.to(this.user.room.code).emit(`broadcast-${message}`, state);
         
     }
 
@@ -38,8 +35,7 @@ class Minesweeper {
             this.table.push([]);
             for (let j = 0; j < this.tableSize; j++) {
 
-                let parity = (i + j) % 2 == 0;
-                let backgroundColor = parity ? 'even' : 'odd';
+                let backgroundColor = ((i + j) % 2 == 0) ? 'even' : 'odd';
 
                 this.table[i].push({
                     innerHTML: '',

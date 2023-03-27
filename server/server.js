@@ -57,37 +57,52 @@ io.on('connection', (socket) => {
 
         console.log(`Socket connected: ${socket.id}`);
 
-        users[socket.id] = new User(socket); // create user and add to user list
+        const user = new User(socket);
 
-        socket.emit('new room', users[socket.id].code); // create room
+        users[socket.id] = user;
+        rooms[user.room.code] = user.room;
+
+        socket.emit('join room', user.room.code); // create room
         socket.emit('initialize user', socket.id); // create user in room
 
     });
 
-    socket.on('new room', (code) => {
+    socket.on('request to join room', (code) => {
+        if (rooms[code].socketIdList.includes(socket.id)) {
+            socket.emit('error in joining room', `You are already in room ${code}!`);
+        } else if (rooms[code].socketIdList.length === 4) {
+            socket.emit('error in joining room', `Room ${code} is full.`);
+        } else {
+            socket.emit('join room', code);
+        }
+    });
+
+    socket.on('join room', (code) => {
 
         removeFromRooms(socket); // leave room(s)
 
         // join room
 
-        socket.join(code); // join room
-        users[socket.id].code = code; // update room code in user class
+        socket.join(code);
 
         if (!Object.hasOwn(rooms, code)) {
-            rooms[code] = new Room(code); // if the room doesn't exist in the room list, create the room
+            const room = new Room([socket.id], code); // create the room if the room doesn't exist
+            rooms[code] = room; // update room in rooms list
+            users[socket.id].room = room; // update room in user
+        } else {
+            rooms[code].addSocket(socket.id); // update the socket list
         }
-        rooms[code].sockets.push(socket); // update the socket list
 
         // update UI        
 
-        io.in(code).emit('new room for this socket', {
+        io.in(code).emit('join room for this socket', {
             socketId: socket.id,
-            room: rooms[code].toEmit()
+            room: rooms[code]
         });
 
         socket.to(code).emit('broadcast-initialize user', socket.id); // create this socket's user in other sockets in the new room
 
-        printUserAndRoomInfo(); // print to console
+        printServerInfo();
 
     });
 
@@ -96,7 +111,7 @@ io.on('connection', (socket) => {
         console.log(`Socket disconnected: ${socket.id}`);
 
         if (Object.keys(users).includes(socket.id)) {
-            socket.to(users[socket.id].code).emit('remove socket', socket.id); // remove UI from other sockets in room
+            socket.to(users[socket.id].room.code).emit('remove socket', socket.id); // remove UI from other sockets in room
         }
 
         delete users[socket.id]; // remove socket from users
@@ -135,12 +150,12 @@ function removeFromRooms(socket) {
 
     for (let roomCode of Object.keys(rooms)) { // loop through all rooms
         const room = rooms[roomCode];
-        if (room.socketInRoom(socket)) { // if socket is in a room
+        if (room.checkForSocket(socket.id)) { // if socket is in a room
         
             socket.leave(roomCode); // leave room
-            room.removeSocket(socket); // remove old room from socket list
+            room.removeSocket(socket.id); // remove old room from socket list
             
-            if (room.sockets.length === 0) {
+            if (room.socketIdList.length === 0) {
                 delete rooms[roomCode]; // remove room from rooms if there are no sockets
             }
 
@@ -149,8 +164,8 @@ function removeFromRooms(socket) {
 
 }
 
-function printUserAndRoomInfo() {
+function printServerInfo() {
     console.log(`\nusers and rooms:`);
     console.log(Object.values(users));
-    console.log(Array.from(Object.values(rooms), room => room.toEmit()));
+    console.log(Object.values(rooms));
 }

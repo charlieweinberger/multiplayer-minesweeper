@@ -12,26 +12,34 @@
 
 </head>
 <body>
-
-    <div id="inputDiv">
-        <div id="promptText">Join Room (Enter Code)</div>
-        <div id="errorText">Error Here</div>
-        <form id="inputForm">
-            <input type="text" id="inputText">
-            <button type="submit" id="submitInputButton">Join</button>
-        </form>
-    </div>
-
-    <button class="button" id="leaveRoom">Leave Room</button>
-
-    <div class="header">
+    
+    <header>
         <p>Minesweeper</p>
         <p class="info" id="roomCode">Code: </p>
         <p class="info" id="clientsInRoom">Clients: </p>
         <p class="info" id="status">Status: </p>
-    </div>
+    </header>
+
+    <section>
+        <article>
+            <div class="row" id="row"></div>
+        </article>
+    </section>
+
+    <footer>
+        
+        <div id="inputDiv">
+            <div id="promptText">Join Room (Enter Code)</div>
+            <div id="errorText">Error Here</div>
+            <form id="inputForm">
+                <input type="text" id="inputText">
+                <button type="submit" id="submitInputButton">Join</button>
+            </form>
+        </div>
     
-    <div class="row" id="row"></div>
+        <button class="button" id="leaveRoom">Leave Room</button>
+
+    </footer>
 
 </body>
 </html>
