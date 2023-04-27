@@ -79,6 +79,17 @@ socket.on('broadcast-initialize game', (state) => {
     removeButton(state.id);
     createGame(state.id, state);
     updateUI(getHTMLTableById(state.id), state);
+    socket.emit('tell broadcasters-initialize game', {
+        stateId: state.id,
+        socketId: socket.id
+    });
+});
+
+socket.on('respond to initialize game', (state) => {
+    console.log(`respond to initialize game: ${state.socketId}`);
+    // SOMETHING SHOULD BE HERE, BUT NEITHER WORK
+    createGame(state.socketId, state);
+    // createGame(state.stateId, state);
 });
 
 // update game

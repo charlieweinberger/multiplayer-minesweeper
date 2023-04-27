@@ -114,7 +114,7 @@ io.on('connection', (socket) => {
 
         socket.to(code).emit('broadcast-initialize user', socket.id); // create this socket's user in other sockets in the new room
 
-        printServerInfo();
+        // printServerInfo();
 
     });
 
@@ -152,8 +152,11 @@ io.on('connection', (socket) => {
 
     socket.on('tell broadcasters-initialize game', (state) => {
         console.log(`tell broadcasters-initialize game`);
-        io.to(state.stateId).emit('respond to initialize game', state);
-        // socket.to("room1").emit('respond to initialize game', state);
+        // for (let socketId of Object.keys(users)) {
+        //     if (socketId != socket.id) {
+        //         io.to(socketId).emit('respond to initialize game', state);
+        //     }
+        // }
     });
 
 });
