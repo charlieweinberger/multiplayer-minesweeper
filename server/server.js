@@ -6,6 +6,8 @@ import Room from './room.js';
 import User from './user.js';
 import Minesweeper from './minesweeper.js';
 
+// Create Server
+
 const app = express();
 const httpServer = http.Server(app);
 const io = new Server(httpServer);
@@ -15,6 +17,8 @@ app.get('/', (_, res) => res.sendFile(`${__dirname}/client/index.html`));
 
 let portNum = 3000;
 console.log(`Http server running at localhost:${portNum}\n`);
+
+// Establish socketry
 
 const rooms = {};
 const users = {};
@@ -65,7 +69,7 @@ io.on('connection', (socket) => {
 
         // update UI        
 
-        io.in(code).emit('join room for this socket', {
+        io.to(code).emit('join room for this socket', {
             socketId: socket.id,
             room: rooms[code]
         });
@@ -142,5 +146,7 @@ function printServerInfo() {
     console.log(Object.values(users));
     console.log(Object.values(rooms));
 }
+
+// Run Server (?)
 
 httpServer.listen(portNum, () => console.log(`Listening on *:${portNum}`));

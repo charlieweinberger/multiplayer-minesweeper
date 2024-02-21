@@ -1,4 +1,4 @@
-let socket = io();
+const socket = io();
 socket.emit('connection');
 
 // room socketry
