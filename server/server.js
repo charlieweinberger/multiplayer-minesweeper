@@ -1,50 +1,20 @@
-import { createServer } from 'http';
-import { readFile } from 'fs';
-import { extname as _extname } from 'path';
+import express from 'express';
+import http from 'http';
 import { Server } from 'socket.io';
 
 import Room from './room.js';
 import User from './user.js';
 import Minesweeper from './minesweeper.js';
 
-const port = 3000;
-const app = createServer(requestHandler).listen(port);
-const io = new Server(app);
+const app = express();
+const httpServer = http.Server(app);
+const io = new Server(httpServer);
 
-console.log(`Http server running at localhost:${port}\n`);
+app.use(express.static('client'));
+app.get('/', (_, res) => res.sendFile(`${__dirname}/client/index.html`));
 
-function requestHandler(req, res) {
-
-    let filePath = `./client${req.url}`;
-    if (filePath == './client/') filePath += 'index.html';
-
-    const extname = String(_extname(filePath)).toLowerCase();
-    const mimeTypes = {
-        '.html': 'text/html',
-        '.js': 'text/javascript',
-        '.css': 'text/css',
-        '.json': 'application/json',
-        '.png': 'image/png',
-        '.jpg': 'image/jpg',
-        '.gif': 'image/gif',
-        '.svg': 'image/svg+xml',
-        '.wav': 'audio/wav',
-        '.mp4': 'video/mp4',
-        '.woff': 'application/font-woff',
-        '.ttf': 'application/font-ttf',
-        '.eot': 'application/vnd.ms-fontobject',
-        '.otf': 'application/font-otf',
-        '.wasm': 'application/wasm'
-    };
-
-    const contentType = mimeTypes[extname] || 'application/octet-stream';
-
-    readFile(filePath, (error, content) => {
-        res.writeHead(200, { 'Content-Type': contentType });
-        res.end(content, 'utf-8');
-    });
-
-}
+let portNum = 3000;
+console.log(`Http server running at localhost:${portNum}\n`);
 
 const rooms = {};
 const users = {};
@@ -172,3 +142,5 @@ function printServerInfo() {
     console.log(Object.values(users));
     console.log(Object.values(rooms));
 }
+
+httpServer.listen(portNum, () => console.log(`Listening on *:${portNum}`));
