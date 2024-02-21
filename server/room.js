@@ -1,16 +1,14 @@
 class Room {
 
-    constructor(socketIdList, code=this.generateRoomCode()) {
+    constructor(socketIdList, code = undefined) {
         this.socketIdList = socketIdList;
-        this.code = code;
+        this.code = this.generateRoomCode(code);
     }
 
-    generateRoomCode() {
-        return Math.floor(1000 + Math.random() * 9000).toString();
-    }
-
-    startCompetition() {
-        // work on this
+    generateRoomCode(code) {
+        // Fix problem that two rooms could randomly have the same code. Solution is to input other room codes and exclude them.
+        let roomCode = Math.floor(1000 + Math.random() * 9000).toString();
+        return code ? code : roomCode;
     }
 
     addSocket(socketId) {
@@ -36,7 +34,6 @@ class Room {
         }
         return false;
     }
-
 
 }
 

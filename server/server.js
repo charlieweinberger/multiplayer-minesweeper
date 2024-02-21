@@ -15,8 +15,8 @@ const io = new Server(httpServer);
 app.use(express.static('client'));
 app.get('/', (_, res) => res.sendFile(`${__dirname}/client/index.html`));
 
-let portNum = 3000;
-console.log(`Http server running at localhost:${portNum}\n`);
+const PORT_NUM = 3000;
+console.log(`Http server running at localhost:${PORT_NUM}\n`);
 
 // Establish socketry
 
@@ -36,7 +36,7 @@ io.on('connection', (socket) => {
         users[socket.id] = user;
         rooms[user.room.code] = user.room;
 
-        socket.emit('join room', user.room.code); // create room
+        joinRoom(socket, user.room.code); // create room
         socket.emit('initialize user', socket.id); // create user in room
 
     });
@@ -47,38 +47,11 @@ io.on('connection', (socket) => {
         } else if (rooms[code].socketIdList.length === 4) {
             socket.emit('error in joining room', `Room ${code} is full.`);
         } else {
-            socket.emit('join room', code);
+            joinRoom(socket, code);
         }
     });
 
-    socket.on('join room', (code) => {
-
-        removeFromRooms(socket); // leave room(s)
-
-        // join room
-
-        socket.join(code);
-
-        if (!Object.hasOwn(rooms, code)) {
-            const room = new Room([socket.id], code); // create the room if the room doesn't exist
-            rooms[code] = room; // update room in rooms list
-            users[socket.id].room = room; // update room in user
-        } else {
-            rooms[code].addSocket(socket.id); // update the socket list
-        }
-
-        // update UI        
-
-        io.to(code).emit('join room for this socket', {
-            socketId: socket.id,
-            room: rooms[code]
-        });
-
-        socket.to(code).emit('broadcast-initialize user', socket.id); // create this socket's user in other sockets in the new room
-
-        // printServerInfo();
-
-    });
+    socket.on('join room', (code) => joinRoom(socket, code));
 
     socket.on('disconnect', () => {
 
@@ -123,6 +96,37 @@ io.on('connection', (socket) => {
 
 });
 
+// Functions
+
+function joinRoom(socket, code) {
+    
+    removeFromRooms(socket); // leave room(s)
+
+    // join room
+
+    socket.join(code);
+
+    if (!Object.hasOwn(rooms, code)) {
+        const room = new Room([socket.id], code); // create the room if the room doesn't exist
+        rooms[code] = room; // update room in rooms list
+        users[socket.id].room = room; // update room in user
+    } else {
+        rooms[code].addSocket(socket.id); // update the socket list
+    }
+
+    // update UI
+
+    io.to(code).emit('join room for this socket', {
+        socketId: socket.id,
+        room: rooms[code]
+    });
+
+    socket.to(code).emit('broadcast-initialize user', socket.id); // create this socket's user in other sockets in the new room
+
+    // printServerInfo();
+
+}
+
 function removeFromRooms(socket) {
 
     for (let roomCode of Object.keys(rooms)) { // loop through all rooms
@@ -141,12 +145,12 @@ function removeFromRooms(socket) {
 
 }
 
-function printServerInfo() {
-    console.log(`\nusers and rooms:`);
-    console.log(Object.values(users));
-    console.log(Object.values(rooms));
-}
+// function printServerInfo() {
+//     console.log(`\nusers and rooms:`);
+//     console.log(Object.values(users));
+//     console.log(Object.values(rooms));
+// }
 
 // Run Server (?)
 
-httpServer.listen(portNum, () => console.log(`Listening on *:${portNum}`));
+httpServer.listen(PORT_NUM, () => console.log(`Listening on *:${PORT_NUM}`));

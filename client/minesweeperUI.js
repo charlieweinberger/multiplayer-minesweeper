@@ -3,8 +3,15 @@ socket.emit('connection');
 
 // room socketry
 
-socket.on('join room', (code) => socket.emit('join room', code));
-socket.on('request to join room', (code) => socket.emit('request to join room', code));
+socket.on('join room', (code) => {
+    console.log("DELETE THIS 1"); // delete this entire socket.on(), since it's been replaced with the joinRoom() function in server.js
+    socket.emit('join room', code);
+});
+
+socket.on('request to join room', (code) => {
+    console.log("DELETE THIS 2"); // delete this entire socket.on(), since it's not being used
+    socket.emit('request to join room', code);
+});
 
 socket.on('join room for this socket', (socketInfo) => {
 
