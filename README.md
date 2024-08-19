@@ -1,0 +1,1 @@
+The goal of this project was to be able to play minesweeper online. I got the minesweeper part working singleplayer, but never finished multiplayer. It wouldn't be hard to do so, and maybe I will in the future, but if so, it'll be in a more advanced tech stack than just HTML/CSS/JS.
